@@ -36,10 +36,14 @@ export default function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 w-64 h-screen bg-[#ECE9E2] flex flex-col justify-between border-r border-gray-200">
       <div>
-        <div className="flex items-center gap-2 px-6 py-6">
-          <Image src="/icon.png" width={50} height={50} alt="BUtique" />
-          <span className={`${barrio.className} text-4xl text-[#00013d]`}>BUtique</span>
-        </div>
+        <Link href="/marketplace">
+          <div className="flex items-center gap-1 px-3 pb-10 cursor-pointer">
+            <Image src="/icon.png" width={50} height={50} alt="BUtique" />
+            <span className={`${barrio.className} mt-3 text-5xl text-[#00013d]`}>
+              BUtique
+            </span>
+          </div>
+        </Link>
 
         <div className=" px-4 pb-4">
         <input
@@ -59,7 +63,7 @@ export default function Sidebar() {
                 href={item.href}
                 className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm transition
                   ${isActive 
-                    ? "bg-[#A7B0BF] text-white font-medium" 
+                    ? "bg-[#71808b] text-white font-medium" 
                     : "bg-white text-[#6C7480] hover:bg-gray-100"
                   }`}
               >

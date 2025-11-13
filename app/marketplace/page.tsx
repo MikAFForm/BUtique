@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import Header from "../components/header";
 import ProductCard from "../components/productCard";
-import ProductDetailCard from "../components/productDetailCard";
+import productDetailModal from "../components/productDetailModal";
+
 import { Empty } from "antd";
+import ProductDetailModal from "../components/productDetailModal";
 
 
 type Product = {
@@ -63,6 +65,21 @@ export default function MarketplacePage() {
       price: 80,
       condition: "Good",
       status: "Available",
+      created_at: "2025-11-10T14:00:00Z", 
+      sellerName: "Lit Zheng",
+      sellerRating: 5.0,
+      location: null,
+      description:
+        "Compact mini fridge, works perfectly. Great for dorm rooms and apartments.",
+      image: "/bike.jpeg",
+      category: "Electronics",
+    },
+    {
+      id: 3,
+      title: "textbook",
+      price: 80,
+      condition: "Good",
+      status: "On Hold",
       created_at: "2025-11-10T14:00:00Z", 
       sellerName: "Lit Zheng",
       sellerRating: 5.0,
@@ -140,7 +157,8 @@ export default function MarketplacePage() {
               Close
             </button>
 
-            <ProductDetailCard product={selectedProduct} />
+            <ProductDetailModal product={selectedProduct} />
+
           </div>
         </div>
       )}

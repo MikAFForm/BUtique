@@ -6,7 +6,8 @@ import { FaStar } from "react-icons/fa";
 import { useState } from "react";
 import { SlCalender } from "react-icons/sl";
 
-export default function ProductDetailCard({ product }: { product: any }) {
+export default function ProductDetailModal({ product }: { product: any }) {
+
   const [liked, setLiked] = useState(false);
 
   // Calculate

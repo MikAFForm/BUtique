@@ -17,14 +17,13 @@ export default function Header() {
     <header className="w-full h-16 bg-[#f1efe8] px-6 py-3 flex items-center justify-between shadow-sm">
 
       <div className="flex items-center gap-6 pt-1">
-        <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/icon.png" 
-            width={50}
-            height={50}
-            alt="BUtique"
-          />
-          <span className={`${barrio.className} text-4xl text-[#00013d]`}>BUtique</span>
+        <Link href="/marketplace">
+          <div className="flex items-center gap-1 cursor-pointer">
+            <Image src="/icon.png" width={50} height={50} alt="BUtique" />
+            <span className={`${barrio.className} mt-3 text-5xl text-[#00013d]`}>
+              BUtique
+            </span>
+          </div>
         </Link>
 
         {/* Search Bar */}
