@@ -9,7 +9,7 @@ import { SlCalender } from "react-icons/sl";
 export default function ProductDetailCard({ product }: { product: any }) {
   const [liked, setLiked] = useState(false);
 
-  // Calculate how long ago the post was posted
+  // Calculate
   const postedAgo = (() => {
     const postedDate = new Date(product.created_at);
     const today = new Date();
