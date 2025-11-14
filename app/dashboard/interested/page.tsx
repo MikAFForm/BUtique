@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import Sidebar from "../../components/sidebar";
+import { Empty } from "antd";
 
 export default function PostsPage() {
   const [posts, setPosts] = useState([
@@ -81,84 +82,102 @@ export default function PostsPage() {
           </Link>
         </div>
 
-      <div className="flex flex-col gap-8">
-       {sortedPosts.map((post) => (
-          <div
-            key={post.id}
-            className="w-full border rounded-xl shadow-sm bg-white p-5 flex gap-6"
-          >
-            <div className="w-[260px] h-[150px] relative rounded-lg overflow-hidden">
-              <Image
-                src={post.image}
-                alt={post.title}
-                fill
-                className="object-cover"
-              />
-              {/* <AiFillHeart
-                className="absolute top-2 right-2 text-[#71808b] text-2xl z-10 "
-              /> */}
-            </div>
-
-
-            {/* Right section */}
-          <div className="flex flex-col flex-1 justify-between">
-
-            <div className="flex items-center gap-7">
-              <p className="font-semibold text-xl">{post.title}</p>
-
-              <span className="px-3 py-1 text-sm bg-gray-200 rounded-md">
-                {post.condition}
-              </span>
-
-              <span className="px-3 py-1 text-sm border rounded-md">
-                {post.category}
-              </span>
-
-              <span
-                className={`ml-auto px-4 py-1 text-sm rounded-md ${
-                  post.status ? getStatusStyle(post.status) : "bg-gray-400 text-white"
-                    }`}
+        {sortedPosts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center mt-20 text-center">
+            <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+                <span className="text-lg">
+                    You have not added any posts to your interested list yet.
+                <br />
+                <span className="text-gray-500 text-sm">
+                    Start by exploring the Marketplace and adding products to your interested list!
+                </span>
+                </span>
+            }
+            />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-8">
+            
+          {sortedPosts.map((post) => (
+              <div
+                key={post.id}
+                className="w-full border rounded-xl shadow-sm bg-white p-5 flex gap-6"
               >
-                {post.status}
-              </span>
-            </div>
-
-            <p className="text-gray-600 text-sm my-2 max-w-3xl">
-              {post.description}
-            </p>
-
-            <div className="flex items-center justify-between mt-4">
-              <div>
-                <div className="flex items-center gap-3 text-gray-700">
-                  <p className="text-xl font-semibold">${post.price.toFixed(2)}</p>
+                <div className="w-[260px] h-[150px] relative rounded-lg overflow-hidden">
+                  <Image
+                    src={post.image}
+                    alt={post.title}
+                    fill
+                    className="object-cover"
+                  />
+                  {/* <AiFillHeart
+                    className="absolute top-2 right-2 text-[#71808b] text-2xl z-10 "
+                  /> */}
                 </div>
 
-                <p className="text-xs text-gray-500 mt-3">
-                  Posted At: {post.createdAt}
+
+                {/* Right section */}
+              <div className="flex flex-col flex-1 justify-between">
+
+                <div className="flex items-center gap-7">
+                  <p className="font-semibold text-xl">{post.title}</p>
+
+                  <span className="px-3 py-1 text-sm bg-gray-200 rounded-md">
+                    {post.condition}
+                  </span>
+
+                  <span className="px-3 py-1 text-sm border rounded-md">
+                    {post.category}
+                  </span>
+
+                  <span
+                    className={`ml-auto px-4 py-1 text-sm rounded-md ${
+                      post.status ? getStatusStyle(post.status) : "bg-gray-400 text-white"
+                        }`}
+                  >
+                    {post.status}
+                  </span>
+                </div>
+
+                <p className="text-gray-600 text-sm my-2 max-w-3xl">
+                  {post.description}
                 </p>
+
+                <div className="flex items-center justify-between mt-4">
+                  <div>
+                    <div className="flex items-center gap-3 text-gray-700">
+                      <p className="text-xl font-semibold">${post.price.toFixed(2)}</p>
+                    </div>
+
+                    <p className="text-xs text-gray-500 mt-3">
+                      Posted At: {post.createdAt}
+                    </p>
+                  </div>
+
+                  {/* Right side (Buttons) */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); 
+                        alert("Chat  coming soon!");
+                      }}
+                      className="px-5 py-2 rounded-md bg-[#71808b] hover:bg-[#5f6c75] text-white transition"
+                    >
+                      Contact Seller
+                    </button>
+                    <button className="px-5 py-2 rounded-md bg-[#FF3B30] text-white hover:bg-[#e03129] transition">
+                      Cancel Interested
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              {/* Right side (Buttons) */}
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation(); 
-                    alert("Chat  coming soon!");
-                  }}
-                  className="px-5 py-2 rounded-md bg-[#71808b] hover:bg-[#5f6c75] text-white transition"
-                >
-                  Contact Seller
-                </button>
-                <button className="px-5 py-2 rounded-md bg-[#FF3B30] text-white hover:bg-[#e03129] transition">
-                  Cancel Interested
-                </button>
               </div>
-            </div>
+            ))}
           </div>
-
-          </div>
-        ))}
-      </div>
+        )}
     </div>
     </>
   );

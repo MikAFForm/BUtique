@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Header from "../components/header";
-import ProductCard from "../components/productCard";
-import productDetailModal from "../components/productDetailModal";
-
+import ProductCard from "./productCard";
 import { Empty } from "antd";
-import ProductDetailModal from "../components/productDetailModal";
+import ProductDetailModal from "./productDetailModal";
 
 
 type Product = {

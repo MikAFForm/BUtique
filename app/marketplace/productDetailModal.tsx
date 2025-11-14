@@ -7,6 +7,7 @@ import { useState } from "react";
 import { SlCalender } from "react-icons/sl";
 
 export default function ProductDetailModal({ product }: { product: any }) {
+  const user = {image: "/sampleUser.png"}; // Placeholder for user image logic
 
   const [liked, setLiked] = useState(false);
 
@@ -106,7 +107,15 @@ export default function ProductDetailModal({ product }: { product: any }) {
         {/* Seller Info */}
         <p className="text-sm font-semibold mt-7">Seller Information</p>
         <div className="bg-white rounded-xl p-4 shadow mt-2 flex items-center gap-3">
-          <AiOutlineUser className="text-3xl" />
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+            <Image
+              src={user.image}
+              alt="profile"
+              width={56}
+              height={56}
+              className="object-cover"
+            />
+            </div>
           <div>
             <p className="font-semibold">{product.sellerName}</p>
             <div className="flex items-center gap-1 text-sm">
