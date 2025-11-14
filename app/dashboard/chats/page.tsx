@@ -29,7 +29,7 @@ export default function ChatsPage() {
       <Sidebar />
 
       <div className="ml-64 px-10 py-10">
-        <h1 className="text-3xl font-bold mb-6">HI! Tester</h1>
+        <h1 className="text-3xl font-bold mb-6">Chat with your friends</h1>
 
         <div className="flex flex-wrap gap-8">
           {chatUsers.map((u) => (

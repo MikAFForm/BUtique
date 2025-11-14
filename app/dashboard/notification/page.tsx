@@ -57,7 +57,7 @@ export default function NotificationPage() {
       <Sidebar />
 
       <div className="ml-64 px-10 py-10">
-        <div className="flex items-center justify-between w-[800px] mb-6">
+        <div className="flex items-center justify-between w-full mb-6">
           <h1 className="text-3xl font-bold">New Notification</h1>
 
           <button
@@ -74,7 +74,7 @@ export default function NotificationPage() {
             <div
               key={item.id}
               onClick={() => openChat(item.sender)}
-              className="flex items-center justify-between border border-gray-300 rounded-xl px-4 py-3 w-[800px] bg-white shadow-sm cursor-pointer"
+              className="flex items-center justify-between border border-gray-300 rounded-xl px-4 py-3 w-full bg-white shadow-sm cursor-pointer"
             >
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full overflow-hidden">
