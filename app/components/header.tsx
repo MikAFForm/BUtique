@@ -48,12 +48,12 @@ export default function Header() {
           Create A Post
         </Link>
 
-        <Link
+        {/* <Link
           href="/wish"
           className="px-4 py-2 rounded-lg bg-[#71808b] text-white font-medium hover:bg-[#5f6c75]"
         >
           Wish An Item
-        </Link>
+        </Link> */}
         </div>
 
         {/* Icons */}

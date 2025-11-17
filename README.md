@@ -13,6 +13,23 @@ npm run dev
 
 Open http://localhost:3000 in your browser.
 
+## Git Cheat Sheet
+
+### Make a change
+1. `git checkout main`
+2. `git pull origin main`
+3. `git checkout -b Minsung/<task-name>`
+
+### Open a PR
+1. `git add .`
+2. `git commit -m "commit message"`
+3. `git push origin <branch-name>`
+4. Create a PR on GitHub
+5. Assign reviewers
+6. Merge into `main`
+
+> Always run `git status` to confirm what’s staged and what’s pending.
+
 ## Main page
 
 The main page of the app is `app/page.tsx`. That file renders the home route `/`. Keep `app/page.tsx` focused on layout and composition — avoid hardcoding user-visible copy inside TSX files.
