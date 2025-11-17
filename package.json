@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:db": "node scripts/test-supabase-connection.js",
+    "backend:dev": "cd backend && uvicorn app.main:app --reload --port 4000"
   },
   "dependencies": {
     "antd": "^5.28.1",
