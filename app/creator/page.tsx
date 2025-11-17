@@ -1,61 +1,28 @@
+import { Barrio } from "next/font/google";
+
+const barrio = Barrio({
+  weight: "400",
+  subsets: ["latin"],
+});
+
+
+
 export default function AccountCreator() {
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center bg-[#EDEAE2]">
         <form action="/api/create_account" method="POST" className="flex flex-col gap-4 p-6 border rounded">
-            <label htmlFor="Email">Email</label>
-            <input className="border border-gray-400 rounded p-2" type="text" id="name" name="email" required/>
-                       <button
-                className="
-                    bg-purple-600 
-                    text-white 
-                    px-6 py-2 
-                    rounded-lg 
-                    shadow-md 
-                    hover:bg-pink-700 
-                    hover:scale-150 
-                    transition 
-                    duration-100
-                ">
-                Send Code
-            </button>
+            <img src="/icon.png" alt="logo" className="w-20 h-20 mb-4" />
+            <h1 className={`${barrio.className} mt-3 text-5xl text-[#00013d]`}>Enter Details Below!</h1>
+            <label>Email</label>
+            <input className="border border-black-400 rounded-2xl p-2" type="text" id="email" name="email" required></input>
 
-            <label htmlFor="username">Username</label>
-            <input className="border border-gray-400 rounded p-2" type="text" id="username" name="username" required/>
+            <label>Username</label>
+            <input className="border border-black-400 rounded-2xl p-2" type="text" id="psername" name="psername" required></input>
 
-            <label htmlFor="password">Password</label>
-            <input className="border border-gray-400 rounded p-2" type="text" id="password" name="password" required/>
+            <label>Password</label>
+            <input className="border border-black-400 rounded-2xl p-2" type="text" id="password" name="password" required></input>
 
-            <label htmlFor="onetimecode">One Time Code</label>
-            <input className="border border-gray-400 rounded p-2" type="text" id="onetimecode" name="onetimecode" required/>
-
-           <button
-                className="
-                    bg-blue-600 
-                    text-white 
-                    px-6 py-2 
-                    rounded-lg 
-                    shadow-md 
-                    hover:bg-blue-700 
-                    hover:scale-150 
-                    transition 
-                    duration-200
-                ">
-                Add Account
-            </button>
-                                   <button
-                className="
-                    bg-pink-600 
-                    text-white 
-                    px-6 py-2 
-                    rounded-lg 
-                    shadow-md 
-                    hover:bg-pink-700 
-                    hover:scale-150 
-                    transition 
-                    duration-100
-                ">
-                Signin
-            </button>
+            <button type="submit" className="bg-[#5E676E] text-white p-2 rounded-2xl">Create Account</button>
         </form>
     </div>
   );
