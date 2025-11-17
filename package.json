@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:db": "node scripts/test-supabase-connection.js"
+    "test:db": "node scripts/test-supabase-connection.js",
+    "backend:dev": "cd backend && uvicorn app.main:app --reload --port 4000"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.2",

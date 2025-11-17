@@ -1,0 +1,43 @@
+from typing import List
+
+import strawberry
+from strawberry.types import Info
+
+from .db import supabase
+
+
+@strawberry.type
+class User:
+    id: strawberry.ID
+    name: str
+    email: str
+
+
+def _unwrap(response):
+    data = getattr(response, "data", None)
+    if data is None:
+        raise RuntimeError("Supabase returned no data.")
+    return data
+
+
+@strawberry.type
+class Query:
+    @strawberry.field
+    def users(self, info: Info) -> List[User]:
+        result = supabase.table("users").select("*").execute()
+        return [User(**row) for row in _unwrap(result)]
+
+
+@strawberry.type
+class Mutation:
+    @strawberry.mutation
+    def create_user(self, name: str, email: str) -> User:
+        result = (
+            supabase.table("users")
+            .insert({"name": name, "email": email})
+            .select("*")
+            .single()
+            .execute()
+        )
+        row = _unwrap(result)
+        return User(**row)

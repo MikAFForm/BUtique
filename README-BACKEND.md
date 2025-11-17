@@ -7,16 +7,23 @@
    NEXT_PUBLIC_SUPABASE_URL=...
    NEXT_PUBLIC_SUPABASE_ANON_KEY=...
    SUPABASE_SERVICE_ROLE_KEY=...
+   NEXT_PUBLIC_GRAPHQL_ENDPOINT=http://localhost:4000/graphql
    ```
-3. Restart `npm run dev` after any env change.
+3. Restart both servers after any env change.
 
-### Testing queries/mutations
-1. Run `npm install` (first time) and `npm run dev`.
-2. Open `http://localhost:3000/dev/graphiql` in your browser.
-3. Pick a template or type your own query/mutation, optionally add JSON variables, then hit **Run**.
-4. Everything hits `/api/graphql`, so changes go straight to Supabase—no local DB required.
+### Run the Python backend
+1. `cd backend`
+2. `pip install -r requirements.txt`
+3. `uvicorn app.main:app --reload --port 4000`
+
+Use `http://localhost:4000/graphql` for the Strawberry Playground if you want to hit the API directly.
+
+### Testing queries/mutations from Next.js
+1. Run `npm install` (first time) then `npm run dev`.
+2. Open `http://localhost:3000/dev/graphiql`.
+3. Pick a template or type your own query/mutation, optionally add JSON variables, then hit **Run**. The page uses `NEXT_PUBLIC_GRAPHQL_ENDPOINT`, so it targets the Python server.
 
 ### Notes
 - Schema/table changes stay in Supabase; ping me if you need a new table.
-- `/api/graphql` is the real endpoint apps and the playground call.
+- The Python server is the canonical GraphQL API; the frontend no longer relies on the legacy Next.js route.
 - If you get errors, double-check env vars and that the table exists in Supabase.

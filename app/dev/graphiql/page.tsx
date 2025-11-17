@@ -11,6 +11,9 @@ const DEFAULT_QUERY = `query GetUsers {
   }
 }`;
 
+const GRAPHQL_ENDPOINT =
+  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ?? "/api/graphql";
+
 const TEMPLATES: Record<"query" | "mutation", string> = {
   query: DEFAULT_QUERY,
   mutation: `mutation CreateUser($name: String!, $email: String!) {
@@ -69,7 +72,7 @@ export default function GraphiQLPage() {
     }
 
     try {
-      const response = await fetch("/api/graphql", {
+      const response = await fetch(GRAPHQL_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query, variables }),
