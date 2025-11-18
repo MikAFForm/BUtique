@@ -28,7 +28,7 @@ Use `http://localhost:4000/graphql` for the Strawberry Playground if you want to
 - GraphQL resolvers should import those layers rather than handling complex logic inline.
 
 ### Implementing business logic
-1. Create a dedicated service folder (e.g., `backend/app/services/users/create_user/`) containing the implementation (`create_user.py`) and optional `test.py` for unit tests.
+1. Create a dedicated service folder (e.g., `backend/app/services/users/create_user/`) containing the implementation (`create_user.py`) and `test.py` for unit tests.
 2. Add or update `backend/app/resolvers/<domain>/resolver.py` to call the new service function.
 3. Update `backend/app/schema.py` to import the resolver and wire it into the Strawberry schema (queries/mutations).
 
