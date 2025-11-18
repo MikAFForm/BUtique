@@ -1,4 +1,4 @@
-from ....db import supabase
+from app.db import supabase
 
 
 def execute(name: str, email: str) -> dict:

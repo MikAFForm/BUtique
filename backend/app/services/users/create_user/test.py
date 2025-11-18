@@ -24,7 +24,7 @@ def test_create_user_requires_supabase(monkeypatch):
         def table(self, _name):
             return MockTable()
 
-    monkeypatch.setattr("backend.app.services.users.create_user.create_user.supabase", MockSupabase())
+    monkeypatch.setattr("app.services.users.create_user.create_user.supabase", MockSupabase())
 
     result = execute("Test", "test@example.com")
     assert result["name"] == "Test"
