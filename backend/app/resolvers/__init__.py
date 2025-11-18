@@ -1,1 +1,1 @@
-# Resolver layer package
+# Resolver package

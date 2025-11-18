@@ -4,7 +4,7 @@ import strawberry
 from strawberry.types import Info
 
 from .db import supabase
-from .resolvers.users import resolve_create_user
+from .resolvers.users.create_user_resolver import resolve as resolve_create_user
 
 
 @strawberry.type
