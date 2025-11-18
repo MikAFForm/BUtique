@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import mainText from "./data/mainText.json";
-import { createUser } from "./lib/createUser";
+import { createUser } from "./services/createUser";
 
 export default function Home() {
   const [name, setName] = useState("");

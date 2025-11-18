@@ -8,7 +8,7 @@
 Each page component (like `app/page.tsx`, `app/login/page.tsx`) should:
 1. Render UI only: layout, forms, inputs, buttons, etc.
 2. Manage local UI state (input values, loading flags) via React hooks.
-3. Call service-layer functions for any data operations (mutations/queries). Do not call `mutate`/`query` directly in the page; wrap those calls in `app/services/<service>.ts`.
+3. Call service-layer functions for any data operations (mutations/queries). Do not call `mutate`/`query` directly in the page; wrap those calls in `app/services/<service_name>.ts`.
 
 ### Services
 - Place service helpers in `app/services/` (client components if they use `use client`).
