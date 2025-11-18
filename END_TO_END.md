@@ -9,7 +9,7 @@
    - Payload is exactly the `CREATE_USER` mutation string.
 
 3. **FastAPI/Strawberry (`backend/app/main.py` + `backend/app/schema.py`)**
-   - Uvicorn receives the request at `/graphql`.
+   - Uvicorn receives the request at `http://localhost:4000/graphql`.
    - Strawberry schema maps `createUser` to `resolve_create_user` in `backend/app/resolvers/users/resolver.py`.
 
 4. **Resolver layer (`backend/app/resolvers/users/resolver.py`)**
