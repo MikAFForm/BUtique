@@ -27,6 +27,16 @@ Use `http://localhost:4000/graphql` for the Strawberry Playground if you want to
 - Put business logic in `backend/app/services/` and shared helpers in `backend/app/utils/`.
 - GraphQL resolvers should import those layers rather than handling complex logic inline.
 
+### Implementing business logic
+1. Create a dedicated service folder (e.g., `backend/app/services/users/create_user/`) containing the implementation (`create_user.py`) and optional `test.py` for unit tests.
+2. Add or update `backend/app/resolvers/<domain>/resolver.py` to call the new service function.
+3. Update `backend/app/schema.py` to import the resolver and wire it into the Strawberry schema (queries/mutations).
+
+Summary:
+- **Schema**: defines GraphQL types and maps fields/mutations to resolver functions.
+- **Resolvers**: thin functions that orchestrate service calls and format results for GraphQL.
+- **Services**: contain Supabase/database operations plus business rules; tests live alongside them.
+
 ### Notes
 - Schema/table changes stay in Supabase; ping me if you need a new table.
 - The Python server is the canonical GraphQL API; the frontend no longer relies on the legacy Next.js route.
