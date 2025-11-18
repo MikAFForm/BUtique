@@ -4,6 +4,7 @@ import strawberry
 from strawberry.types import Info
 
 from .db import supabase
+from .resolvers.users import resolve_create_user
 
 
 @strawberry.type
@@ -32,12 +33,5 @@ class Query:
 class Mutation:
     @strawberry.mutation
     def create_user(self, name: str, email: str) -> User:
-        result = (
-            supabase.table("users")
-            .insert({"name": name, "email": email})
-            .select("*")
-            .single()
-            .execute()
-        )
-        row = _unwrap(result)
+        row = resolve_create_user(name, email)
         return User(**row)

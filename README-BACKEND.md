@@ -23,6 +23,10 @@ Use `http://localhost:4000/graphql` for the Strawberry Playground if you want to
 2. Open `http://localhost:3000/dev/graphiql`.
 3. Pick a template or type your own query/mutation, optionally add JSON variables, then hit **Run**. The page uses `NEXT_PUBLIC_GRAPHQL_ENDPOINT`, so it targets the Python server.
 
+### Services and utils
+- Put business logic in `backend/app/services/` and shared helpers in `backend/app/utils/`.
+- GraphQL resolvers should import those layers rather than handling complex logic inline.
+
 ### Notes
 - Schema/table changes stay in Supabase; ping me if you need a new table.
 - The Python server is the canonical GraphQL API; the frontend no longer relies on the legacy Next.js route.
