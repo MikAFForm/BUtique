@@ -25,3 +25,5 @@
 
 7. **Response path**
    - Service returns the row → resolver wraps it in the `User` type → schema serializes the GraphQL response → frontend receives JSON → CreateAccountForm updates the UI (success or error message).
+
+So the order is: React form → GraphQL client → FastAPI/Strawberry schema → resolver → service → Supabase → back through the same path to the UI.
