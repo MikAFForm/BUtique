@@ -6,6 +6,8 @@ export const CREATE_USER = `
       id
       name
       email
+      created_at
+      updated_at
     }
   }
 `;

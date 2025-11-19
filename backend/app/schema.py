@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import strawberry
 from strawberry.types import Info
@@ -12,6 +12,8 @@ class User:
     id: strawberry.ID
     name: str
     email: str
+    created_at: Optional[str]
+    updated_at: Optional[str]
 
 
 def _unwrap(response):
