@@ -1,5 +1,3 @@
-import templateText from "../data/postTemplateText.json";
-
 export default function PostPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[rgb(237,234,226)]">
