@@ -15,8 +15,8 @@ class User:
     id: strawberry.ID
     name: str
     email: str
-    created_at: Optional[str]
-    updated_at: Optional[str]
+    created_at: str
+    updated_at: str
 
 
 def _unwrap(response):
@@ -65,6 +65,10 @@ class Query:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    def create_user(self, name: str, email: str) -> User:
-        row = resolve_create_user(name, email)
+    def create_user(self, name: str, email: str, password: str) -> User:
+        row = resolve_create_user(name, email, password)
         return User(**row)
+    
+    # @strawberry.mutation
+    # def login_user(self, email: str, password: str) -> login_response:
+    #     return resolve_login_user(email, password)
