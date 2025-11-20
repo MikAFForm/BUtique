@@ -6,6 +6,7 @@ from strawberry.types import Info
 
 from .db import supabase
 from .resolvers.users.resolver import resolve_create_user
+from .resolvers.search_filter.resolver import resolve_search_products
 
 
 
@@ -39,7 +40,8 @@ class Product:
     category: str
     location: Optional[str]
     hashtags: Optional[List[str]]
-    created_at: Optional[datetime]
+    description: Optional[str]
+    created_at: datetime
 
 @strawberry.type
 class Query:
@@ -55,15 +57,8 @@ class Query:
         search: Optional[str] = None,
         category: Optional[str] = None,
     ) -> List[Product]:
-        query = supabase.table("products").select(
-            "id,name,price,condition,status,category,location,hashtags,created_at"
-        )
-        if search:
-            query = query.ilike("name", f"%{search}%")
-        if category:
-            query = query.eq("category", category)
-        result = query.execute()
-        return [Product(**row) for row in _unwrap(result)]
+        rows = resolve_search_products(keyword=search, category=category)
+        return [Product(**row) for row in rows]
 
 # --------------------------------MUTATION---------------------------------------------
 
