@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Barrio } from "next/font/google";
-import { createUser } from "@/backend/app/services/createUser";
+import { createUser } from "@/services/createUser";
 import { useRouter } from "next/navigation"; 
 
 const barrio = Barrio({
@@ -24,24 +24,22 @@ export default function AccountCreator() {
     setLoading(true);
     setMessage("");
 
-    const result = await createUser(username, email, password);
-
-    setLoading(false);
-
-    if (result.error) {
-      setMessage("Error creating account. Check console.");
-      console.error(result.error);
-    } else {
+    try {
+      await createUser(username, email);
       setMessage("Account created successfully!");
-      // optionally clear fields
       setEmail("");
       setUsername("");
       setPassword("");
       setTimeout(() => {
         router.push("/login");
-    }, 1000);
+      }, 1000);
+    } catch (error: any) {
+      console.error(error);
+      setMessage(error.message || "Error creating account. Check console.");
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#EDEAE2]">
