@@ -11,7 +11,7 @@ def execute(keyword: Optional[str] = None, limit: int = 50) -> List[dict]:
     if keyword:
         pattern = f"%{keyword}%"
         query = query.or_(
-            f"name.ilike.{pattern},description.ilike.{pattern},hashtags::text.ilike.{pattern}"
+            f"hashtags::text.ilike.{pattern},description.ilike.{pattern},name.ilike.{pattern}"
         )
 
     query = query.limit(limit)
