@@ -7,19 +7,6 @@ from strawberry.types import Info
 from .db import supabase
 from .resolvers.users.resolver import resolve_create_user
 
-@strawberry.type
-class Product:
-    """Product nodes returned by search/filter queries."""
-
-    id: strawberry.ID
-    name: str
-    price: float
-    condition: str
-    status: str
-    category: str
-    location: Optional[str]
-    hashtags: Optional[List[str]]
-    created_at: Optional[datetime]
 
 
 @strawberry.type
@@ -45,6 +32,23 @@ class Query:
         result = supabase.table("users").select("*").execute()
         return [User(**row) for row in _unwrap(result)]
 
+    @strawberry.field
+    def products(
+        self,
+        info: Info,
+        search: Optional[str] = None,
+        category: Optional[str] = None,
+    ) -> List[Product]:
+        query = supabase.table("products").select(
+            "id,name,price,condition,status,category,location,hashtags,created_at"
+        )
+        if search:
+            query = query.ilike("name", f"%{search}%")
+        if category:
+            query = query.eq("category", category)
+        result = query.execute()
+        return [Product(**row) for row in _unwrap(result)]
+
 
 @strawberry.type
 class Mutation:
@@ -52,3 +56,17 @@ class Mutation:
     def create_user(self, name: str, email: str) -> User:
         row = resolve_create_user(name, email)
         return User(**row)
+
+"""Product nodes returned by search/filter queries."""
+@strawberry.type
+class Product:
+
+    id: strawberry.ID
+    name: str
+    price: float
+    condition: str
+    status: str
+    category: str
+    location: Optional[str]
+    hashtags: Optional[List[str]]
+    created_at: Optional[datetime]
