@@ -25,6 +25,22 @@ def _unwrap(response):
     return data
 
 
+
+
+@strawberry.type
+class Product:
+    """Product nodes returned by search/filter queries."""
+
+    id: strawberry.ID
+    name: str
+    price: float
+    condition: str
+    status: str
+    category: str
+    location: Optional[str]
+    hashtags: Optional[List[str]]
+    created_at: Optional[datetime]
+
 @strawberry.type
 class Query:
     @strawberry.field
@@ -49,6 +65,7 @@ class Query:
         result = query.execute()
         return [Product(**row) for row in _unwrap(result)]
 
+# -----------------------------------------------------------------------------
 
 @strawberry.type
 class Mutation:
@@ -56,17 +73,3 @@ class Mutation:
     def create_user(self, name: str, email: str) -> User:
         row = resolve_create_user(name, email)
         return User(**row)
-
-"""Product nodes returned by search/filter queries."""
-@strawberry.type
-class Product:
-
-    id: strawberry.ID
-    name: str
-    price: float
-    condition: str
-    status: str
-    category: str
-    location: Optional[str]
-    hashtags: Optional[List[str]]
-    created_at: Optional[datetime]
