@@ -1,7 +1,16 @@
+# pydantic==2.7.4
+# fastapi==0.115.5
+# strawberry-graphql==0.227.2
+# uvicorn[standard]==0.32.0
+# supabase==2.4.0
+# python-dotenv==1.0.1
+
+# work with python3.11
 pydantic==2.7.4
 fastapi==0.115.5
 strawberry-graphql==0.227.2
 uvicorn[standard]==0.32.0
-supabase==2.4.0
+supabase==2.3.2
+gotrue==2.7.0
 python-dotenv==1.0.1
-pytest==8.3.3
+httpx==0.24.1
