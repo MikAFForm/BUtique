@@ -65,7 +65,7 @@ class Query:
         result = query.execute()
         return [Product(**row) for row in _unwrap(result)]
 
-# -----------------------------------------------------------------------------
+# --------------------------------MUTATION---------------------------------------------
 
 @strawberry.type
 class Mutation:
