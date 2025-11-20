@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Optional
 
 import strawberry
@@ -5,6 +6,20 @@ from strawberry.types import Info
 
 from .db import supabase
 from .resolvers.users.resolver import resolve_create_user
+
+@strawberry.type
+class Product:
+    """Product nodes returned by search/filter queries."""
+
+    id: strawberry.ID
+    name: str
+    price: float
+    condition: str
+    status: str
+    category: str
+    location: Optional[str]
+    hashtags: Optional[List[str]]
+    created_at: Optional[datetime]
 
 
 @strawberry.type
