@@ -42,3 +42,5 @@ next-env.d.ts
 # Python bytecode
 __pycache__/
 *.pyc
+
+ai_context.md
