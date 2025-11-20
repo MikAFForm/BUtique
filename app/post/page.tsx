@@ -72,5 +72,5 @@ export default function PostPage() {
                 </button>
             </form>
         </div>
-  );
+  )
 }
