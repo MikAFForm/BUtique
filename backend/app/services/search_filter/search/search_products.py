@@ -5,7 +5,7 @@ from app.db import supabase
 
 def execute(keyword: Optional[str] = None, limit: int = 50) -> List[dict]:
     query = supabase.table("products").select(
-        "id,name,price,condition,status,category,location,hashtags,created_at"
+        "id,name,hashtags,description"
     )
 
     if keyword:
