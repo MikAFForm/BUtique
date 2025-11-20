@@ -2,10 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { FaBell, FaRegHeart } from "react-icons/fa";
 import { AiOutlineUser, AiOutlineComment } from "react-icons/ai";
 import { MdPostAdd } from "react-icons/md";
 import { Barrio } from "next/font/google";
+import { runProductSearch } from "../services/search";
 
 const barrio = Barrio({
   weight: "400",
@@ -13,7 +15,21 @@ const barrio = Barrio({
 });
 
 export default function Header() {
-  const user = {image: "/sampleUser.png"}; // Placeholder for user image logic
+  const user = { image: "/sampleUser.png" }; // Placeholder for user image logic
+  const [keyword, setKeyword] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+
+  const handleSearch = async () => {
+    if (!keyword.trim() || isSearching) return;
+    setIsSearching(true);
+    try {
+      const results = await runProductSearch(keyword.trim());
+      console.log("Search results:", results);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   return (
     <header className="w-full h-16 bg-[#f1efe8] px-6 py-3 flex items-center justify-between shadow-sm">
 
@@ -32,6 +48,14 @@ export default function Header() {
           <input
             type="text"
             placeholder=" Search an Item"
+            value={keyword}
+            onChange={(event) => setKeyword(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                void handleSearch();
+              }
+            }}
             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 focus:outline-none"
           />
         </div>
