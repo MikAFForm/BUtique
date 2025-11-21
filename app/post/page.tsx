@@ -1,4 +1,4 @@
-import postText from "../data/postText.json";
+//import postText from "../data/postText.json";
 import { Barrio } from "next/font/google";
 
 const barrio = Barrio({
