@@ -135,12 +135,21 @@ class Mutation:
         return User(**row)
     
 <<<<<<< HEAD
+<<<<<<< HEAD
     # @strawberry.mutation
     # def login_user(self, email: str, password: str) -> login_response:
     #     return resolve_login_user(email, password)
 =======
+=======
+>>>>>>> 985e132 (Tidy up the create account)
     @strawberry.mutation
     def createProduct(self, info: Info, data: ProductInput) -> AllProduct:
         dto = resolve_create_product(info, data)
         return AllProduct(**dto.__dict__)
+<<<<<<< HEAD
 >>>>>>> 7dc976e (FetchProducts)
+=======
+    # @strawberry.mutation
+    # def login_user(self, email: str, password: str) -> login_response:
+    #     return resolve_login_user(email, password)
+>>>>>>> 985e132 (Tidy up the create account)
