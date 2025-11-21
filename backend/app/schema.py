@@ -1,9 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
-
 import strawberry
 from strawberry.types import Info
-
 from .db import supabase
 from .resolvers.users.resolver import resolve_create_user
 from .resolvers.search_filter.resolver import resolve_search_products
@@ -81,8 +79,8 @@ class ProductInput:
     category: ProductCategory
     seller_id: strawberry.ID
 
-    description: Optional[str] = None
-    location: Optional[str] = None
+    description: str
+    location: str
 
     image_urls: List[str] = strawberry.field(default_factory=list)
     hashtags: List[str] = strawberry.field(default_factory=list)
