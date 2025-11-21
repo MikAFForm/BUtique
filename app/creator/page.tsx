@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Barrio } from "next/font/google";
-import { createUser } from "@/app/services/createUser";
+import { createUser } from "../services/createUser";
 import { useRouter } from "next/navigation"; 
 
 const barrio = Barrio({
