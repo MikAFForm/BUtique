@@ -1,25 +1,9 @@
+"use client";
+
 import { mutate } from "@/lib/graphql/client";
 import { CREATE_USER } from "@/lib/graphql/mutations";
 
-
 export async function createUser(name: string, email: string, password: string) {
-  try {
-    const response = await mutate(CREATE_USER, {
-      name,
-      email,
-      password,
-    });
-
-    return {
-      data: response.createUser,
-      error: null,
-    };
-
-  } catch (err) {
-    console.error("CreateUser error:", err);
-    return {
-      data: null,
-      error: err,
-    };
-  }
+  const result = await mutate(CREATE_USER, { name, email, password });
+  return result;
 }
