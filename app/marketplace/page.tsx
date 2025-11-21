@@ -5,90 +5,50 @@ import Header from "../components/header";
 import ProductCard from "./productCard";
 import { Empty } from "antd";
 import ProductDetailModal from "./productDetailModal";
-
-
-type Product = {
-  id: number;
-  title: string;
-  price: number;
-  condition: string;
-  status: string;             
-  created_at: string; 
-  sellerName: string;
-  sellerRating: number;
-  location: string | null;
-  description: string;
-  image: string;
-  category: string;
-};
+import { fetchAllProducts, AllProduct } from "../services/Productposts/AllproductPosts";
 
 const categories = [
   "All",
-  "Textbook",
+  "Book",
   "Electronics",
-  "Furniture",
-  "Clothing",
-  "Sports",
-  "Transportation",
+  "Clothes",
+  "Dorm Supplies",
   "Others",
 ];
 
 export default function MarketplacePage() {
-  const [loading, setLoading] = useState(false);
-  const [productList, setProductList] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [productList, setProductList] = useState<AllProduct[]>([]);
   const [activeCategory, setActiveCategory] = useState("All");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<AllProduct | null>(null);
 
-  // Load product data
   useEffect(() => {
-    setProductList([
-    {
-      id: 1,
-      title: "Bike",
-      price: 30,
-      condition: "Like New",
-      status: "On Hold",
-      created_at: "2025-11-05T10:00:00Z", 
-      sellerName: "NNNN Zheng",
-      sellerRating: 4.8,
-      location: "GSU",
-      description:
-        "Reliable bike, perfect for campus and trail rides. Recently tuned up with new tires.",
-      image: "/bike.jpeg",
-      category: "Transportation",
-    },
-    {
-      id: 2,
-      title: "Mini Fridge",
-      price: 80,
-      condition: "Good",
-      status: "Available",
-      created_at: "2025-11-10T14:00:00Z", 
-      sellerName: "Lit Zheng",
-      sellerRating: 5.0,
-      location: null,
-      description:
-        "Compact mini fridge, works perfectly. Great for dorm rooms and apartments.",
-      image: "/bike.jpeg",
-      category: "Electronics",
-    },
-    {
-      id: 3,
-      title: "textbook",
-      price: 80,
-      condition: "Good",
-      status: "On Hold",
-      created_at: "2025-11-10T14:00:00Z", 
-      sellerName: "Lit Zheng",
-      sellerRating: 5.0,
-      location: null,
-      description:
-        "Compact mini fridge, works perfectly. Great for dorm rooms and apartments.",
-      image: "/bike.jpeg",
-      category: "Electronics",
-    },
-  ]);
+    const loadProducts = async () => {
+      try {
+        const products = await fetchAllProducts();
+
+        const visibleProducts = products
+          .filter(
+            (p) => p.status === "Available" || p.status === "Hold"
+          )
+          .sort(
+            (a, b) =>
+              new Date(b.createdAt ?? "").getTime() -
+              new Date(a.createdAt ?? "").getTime()
+          );
+
+        setProductList(visibleProducts);
+
+      } catch (error) {
+        console.error("Failed to fetch all products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
   }, []);
+
 
   const filteredList =
     activeCategory === "All"
@@ -118,18 +78,18 @@ export default function MarketplacePage() {
           ))}
         </div>
 
-        {/* Product Grid */}
-        {filteredList.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-20 text-gray-500">
+          Loading products...
+        </div>
+         ):
+         filteredList.length === 0 ? (
         <div className="flex justify-center items-center py-20 w-full">
             <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
             description={
                 <span className="text-lg">
                 Oops! No related products are available right now.
-                <br />
-                <span className="text-gray-500 text-sm">
-                    You can add it to wishlist, and we’ll notify you when it becomes available!
-                </span>
                 </span>
             }
             />
@@ -142,8 +102,9 @@ export default function MarketplacePage() {
             </div>
             ))}
         </div>
-        )}
-
+        )
+      }
+      
       {/* MODAL */}
       {selectedProduct && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">

@@ -25,3 +25,24 @@ export const SEARCH_PRODUCTS = `
     }
   }
 `;
+
+export const GET_ALL_PRODUCTS = `
+  query GetAllProducts {
+    allProducts {
+      id
+      name
+      price
+      condition
+      status
+      category
+      description
+      location
+      sellerId
+      sellerName
+      createdAt
+      updatedAt
+      imageUrls
+      hashtags
+    }
+  }
+`;

@@ -44,3 +44,6 @@ __pycache__/
 *.pyc
 
 ai_context.md
+
+backend/venv
+backend/requirement.txt
