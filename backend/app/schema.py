@@ -15,8 +15,8 @@ class User:
     id: strawberry.ID
     name: str
     email: str
-    created_at: str
-    updated_at: str
+    created_at: datetime
+    updated_at: datetime
 
 
 def _unwrap(response):

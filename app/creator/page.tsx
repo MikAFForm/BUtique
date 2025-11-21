@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Barrio } from "next/font/google";
-import { createUser } from "@/services/createUser";
+import { createUser } from "../services/createUser";
 import { useRouter } from "next/navigation"; 
 
 const barrio = Barrio({
@@ -25,7 +25,7 @@ export default function AccountCreator() {
     setMessage("");
 
     try {
-      await createUser(username, email);
+      await createUser(username, email, password);
       setMessage("Account created successfully!");
       setEmail("");
       setUsername("");
