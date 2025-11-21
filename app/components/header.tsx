@@ -7,14 +7,19 @@ import { FaBell, FaRegHeart } from "react-icons/fa";
 import { AiOutlineUser, AiOutlineComment } from "react-icons/ai";
 import { MdPostAdd } from "react-icons/md";
 import { Barrio } from "next/font/google";
-import { runProductSearch } from "../services/search";
+import { runProductSearch, fetchProductsByIds } from "../services/search";
+import type { AllProduct } from "../services/Productposts/AllproductPosts";
 
 const barrio = Barrio({
   weight: "400",
   subsets: ["latin"],
 });
 
-export default function Header() {
+type HeaderProps = {
+  onSearchResults?: (products: AllProduct[]) => void;
+};
+
+export default function Header({ onSearchResults }: HeaderProps) {
   const user = { image: "/sampleUser.png" }; // Placeholder for user image logic
   const [keyword, setKeyword] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -23,8 +28,10 @@ export default function Header() {
     if (!keyword.trim() || isSearching) return;
     setIsSearching(true);
     try {
-      const results = await runProductSearch(keyword.trim());
-      console.log("Search results:", results);
+      const idsOnly = await runProductSearch(keyword.trim());
+      const fullProducts = await fetchProductsByIds(idsOnly);
+      onSearchResults?.(fullProducts);
+      console.log("Search results:", fullProducts);
     } finally {
       setIsSearching(false);
     }

@@ -35,3 +35,17 @@ def execute(
         row["created_at"] = parse_datetime(row.get("created_at"))
 
     return filtered
+
+
+def fetch_by_ids(ids: List[str]) -> List[dict]:
+    response = (
+        supabase.table("products")
+        .select("*")
+        .in_("id", [str(i) for i in ids])
+        .execute()
+    )
+    rows = response.data or []
+    for row in rows:
+        row["created_at"] = parse_datetime(row.get("created_at"))
+        row["updated_at"] = parse_datetime(row.get("updated_at"))
+    return rows

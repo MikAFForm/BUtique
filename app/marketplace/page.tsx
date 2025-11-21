@@ -18,7 +18,8 @@ const categories = [
 
 export default function MarketplacePage() {
   const [loading, setLoading] = useState(true);
-  const [productList, setProductList] = useState<AllProduct[]>([]);
+  const [allProducts, setAllProducts] = useState<AllProduct[]>([]);
+  const [searchResults, setSearchResults] = useState<AllProduct[] | null>(null);
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedProduct, setSelectedProduct] = useState<AllProduct | null>(null);
 
@@ -32,12 +33,12 @@ export default function MarketplacePage() {
             (p) => p.status === "Available" || p.status === "Hold"
           )
           .sort(
-            (a, b) =>
-              new Date(b.createdAt ?? "").getTime() -
-              new Date(a.createdAt ?? "").getTime()
-          );
+          (a, b) =>
+            new Date(b.createdAt ?? "").getTime() -
+            new Date(a.createdAt ?? "").getTime()
+        );
 
-        setProductList(visibleProducts);
+        setAllProducts(visibleProducts);
 
       } catch (error) {
         console.error("Failed to fetch all products:", error);
@@ -49,15 +50,21 @@ export default function MarketplacePage() {
     loadProducts();
   }, []);
 
+  const handleSearchResults = (results: AllProduct[]) => {
+    setSearchResults(results);
+    setActiveCategory("All");
+  };
 
   const filteredList =
     activeCategory === "All"
-      ? productList
-      : productList.filter((p) => p.category === activeCategory);
+      ? allProducts
+      : allProducts.filter((p) => p.category === activeCategory);
+
+  const displayList = searchResults ?? filteredList;
 
   return (
     <>
-      <Header />
+      <Header onSearchResults={handleSearchResults} />
 
       <div className=" px-6 py-8 max-w-80% mx-auto">
 
@@ -83,7 +90,7 @@ export default function MarketplacePage() {
           Loading products...
         </div>
          ):
-         filteredList.length === 0 ? (
+         displayList.length === 0 ? (
         <div className="flex justify-center items-center py-20 w-full">
             <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -96,7 +103,7 @@ export default function MarketplacePage() {
         </div>
         ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredList.map((product) => (
+            {displayList.map((product) => (
             <div key={product.id} onClick={() => setSelectedProduct(product)}>
                 <ProductCard product={product} />
             </div>
