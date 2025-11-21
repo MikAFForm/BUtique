@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Barrio } from "next/font/google";
-import { createUser } from "@/backend/app/services/createUser";
+import { createUser } from "@/app/services/createUser";
 import { useRouter } from "next/navigation"; 
 
 const barrio = Barrio({
@@ -23,6 +23,16 @@ export default function AccountCreator() {
     e.preventDefault(); // prevent page reload
     setLoading(true);
     setMessage("");
+    if (!email.endsWith("@bu.edu")) {
+      setMessage("Please use your BU email");
+      setLoading(false);
+      return;
+    }
+    if (!password || password.length < 4) {
+      setMessage("Password must be at least 4 characters");
+      setLoading(false);
+      return;
+    }
 
     const result = await createUser(username, email, password);
 
