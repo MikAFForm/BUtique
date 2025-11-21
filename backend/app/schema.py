@@ -6,6 +6,7 @@ from .db import supabase
 from .resolvers.users.resolver import resolve_create_user
 from .resolvers.search_filter.resolver import resolve_search_products
 from .resolvers.products.resolver import resolve_create_product, resolve_products
+from .resolvers.search_filter.resolver import resolve_products_by_ids
 from enum import Enum
 
 
@@ -87,7 +88,7 @@ class ProductInput:
 
 
 @strawberry.type
-class Product:
+class ProductSearch:
     """Product nodes returned by search/filter queries."""
 
     id: strawberry.ID
@@ -119,9 +120,14 @@ class Query:
         info: Info,
         search: Optional[str] = None,
         category: Optional[str] = None,
-    ) -> List[Product]:
+    ) -> List[ProductSearch]:
         rows = resolve_search_products(keyword=search, category=category)
-        return [Product(**row) for row in rows]
+        return [ProductSearch(**row) for row in rows]
+
+    @strawberry.field
+    def productsByIds(self, info: Info, ids: List[strawberry.ID]) -> List[AllProduct]:
+        rows = resolve_products_by_ids([str(i) for i in ids])
+        return [AllProduct(**row) for row in rows]
 
 # --------------------------------MUTATION---------------------------------------------
 
