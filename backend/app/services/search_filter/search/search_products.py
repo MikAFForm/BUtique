@@ -1,7 +1,7 @@
-from datetime import datetime
 from typing import List, Optional
 
 from app.db import supabase
+from app.utils.datetime import parse_datetime
 
 
 def execute(
@@ -32,7 +32,6 @@ def execute(
     filtered = [row for row in rows if matches(row)]
 
     for row in filtered:
-        if isinstance(row.get("created_at"), str):
-            row["created_at"] = datetime.fromisoformat(row["created_at"].replace("Z", "+00:00"))
+        row["created_at"] = parse_datetime(row.get("created_at"))
 
     return filtered
