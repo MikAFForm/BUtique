@@ -2,35 +2,43 @@
 
 import Image from "next/image";
 import { AiOutlineUser, AiOutlineComment } from "react-icons/ai";
-import { FaStar } from "react-icons/fa";
 import { IoLocationOutline } from "react-icons/io5";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
-import { useState } from "react";
+import { AllProduct } from "../services/productPosts";
 
-export default function ProductCard({ product }: { product: any }) {
-  const [liked, setLiked] = useState(false);
+export type Props = {
+  product: AllProduct;
+  onInterest?: (userId: string) => void;
+};
+
+export default function ProductCard({ product, onInterest }: Props) {
+
+  const productImage =
+    product.imageUrls && product.imageUrls.length > 0
+      ? product.imageUrls[0]
+      : "/icon.png";
+  
 
   return (
     <div className="bg-white p-5 rounded-xl shadow hover:shadow-lg transition w-full max-w-m mx-auto cursor-pointer">
 
       <div className="relative">
         <Image
-          src={product.image}
+          src={productImage}
           width={450}
           height={400}
-          alt={product.title}
+          alt={product.name}
           className="rounded-[10px] object-cover h-52 w-full"
         />
 
-        {/* Like  */}
         <button
           onClick={(e) => {
             e.stopPropagation();
-            setLiked(!liked);
+            onInterest?.(product.id);
           }}
           className="absolute top-3 right-3 text-2xl text-gray-800"
         >
-          {liked ? (
+          {product? (
             <FaHeart className="text-[#71808b] drop-shadow" />
           ) : (
             <FaRegHeart className="text-[#71808b] drop-shadow" />
@@ -40,7 +48,7 @@ export default function ProductCard({ product }: { product: any }) {
 
       <div className="mt-4 flex justify-between items-start">
         <h3 className="font-semibold text-lg text-[#00013d] leading-tight">
-          {product.title}
+          {product.name}
         </h3>
 
         <span className="px-3 py-1 bg-gray-100 rounded-lg text-xs">
@@ -61,8 +69,10 @@ export default function ProductCard({ product }: { product: any }) {
       <div className="flex flex-col gap-3 text-sm text-gray-700">
 
         <div className="flex items-center gap-2">
-          <AiOutlineUser className="text-lg" />
-          <span>{product.sellerName}</span>
+          <div className="w-6 h-6 flex items-center justify-center rounded-full bg-gray-100">
+            <AiOutlineUser className="text-lg text-gray-500" />
+          </div>
+          <span>{product.sellerName ?? "Unknown Seller"}</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -73,18 +83,12 @@ export default function ProductCard({ product }: { product: any }) {
               : "Need to discuss with seller"}
           </span>
         </div>
-
-        <div className="flex items-center gap-2">
-          <FaStar className="text-yellow-400" />
-          <span>{product.sellerRating}</span>
-        </div>
       </div>
 
-      {/* CONTACT SELLER  */}
       <button
         onClick={(e) => {
-          e.stopPropagation(); 
-          alert("Chat  coming soon!");
+          e.stopPropagation();
+          alert("Chat coming soon!");
         }}
         className="mt-5 w-full bg-[#71808b] hover:bg-[#5f6c75] text-white py-2 rounded-lg flex items-center justify-center gap-2 text-sm"
       >
@@ -94,3 +98,4 @@ export default function ProductCard({ product }: { product: any }) {
     </div>
   );
 }
+ 

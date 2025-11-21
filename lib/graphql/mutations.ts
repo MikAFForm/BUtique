@@ -11,3 +11,24 @@ export const CREATE_USER = `
     }
   }
 `;
+
+export const CREATE_PRODUCT = `
+  mutation CreateProduct($data: ProductInput!) {
+    createProduct(data: $data) {
+      id
+      name
+      price
+      condition
+      status
+      category
+      description
+      location
+      sellerId
+      sellerName
+      createdAt
+      updatedAt
+      imageUrls
+      hashtags
+    }
+  }
+`;

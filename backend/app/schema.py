@@ -7,7 +7,8 @@ from strawberry.types import Info
 from .db import supabase
 from .resolvers.users.resolver import resolve_create_user
 from .resolvers.search_filter.resolver import resolve_search_products
-
+from .resolvers.products.resolver import resolve_create_product, resolve_products
+from enum import Enum
 
 
 @strawberry.type
@@ -25,7 +26,66 @@ def _unwrap(response):
         raise RuntimeError("Supabase returned no data.")
     return data
 
+@strawberry.enum
+class ProductStatus(Enum):
+    Available = "Available"
+    Hold = "Hold"
+    Sold = "Sold"
 
+
+@strawberry.enum
+class ProductCondition(Enum):
+    Likely_New = "Likely New"
+    Good = "Good"
+    Fair = "Fair"
+
+
+@strawberry.enum
+class ProductCategory(Enum):
+    Book = "Book"
+    Electronics = "Electronics"
+    Dorm_Supplies = "Dorm Supplies"
+    Clothes = "Clothes"
+    Others = "Others"
+
+@strawberry.type
+class AllProduct:
+    id: strawberry.ID
+    name: str
+    price: float
+
+    condition: ProductCondition
+    status: ProductStatus
+    category: ProductCategory
+
+    description: Optional[str] = None
+    location: Optional[str] = None
+
+    seller_id: Optional[strawberry.ID] = None
+    seller_name: Optional[str] = None
+
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
+    image_urls: List[str] = strawberry.field(default_factory=list)
+    hashtags: List[str] = strawberry.field(default_factory=list)
+
+
+
+@strawberry.input
+class ProductInput:
+    name: str
+    price: float
+    condition: ProductCondition
+    status: ProductStatus
+    category: ProductCategory
+    seller_id: strawberry.ID
+
+    description: Optional[str] = None
+    location: Optional[str] = None
+
+    image_urls: List[str] = strawberry.field(default_factory=list)
+    hashtags: List[str] = strawberry.field(default_factory=list)
 
 
 @strawberry.type
@@ -51,6 +111,11 @@ class Query:
         return [User(**row) for row in _unwrap(result)]
 
     @strawberry.field
+    def allProducts(self, info) -> List[AllProduct]:
+        rows = resolve_products(info)
+        return [AllProduct(**row) for row in rows]
+    
+    @strawberry.field
     def products(
         self,
         info: Info,
@@ -69,6 +134,13 @@ class Mutation:
         row = resolve_create_user(name, email, password)
         return User(**row)
     
+<<<<<<< HEAD
     # @strawberry.mutation
     # def login_user(self, email: str, password: str) -> login_response:
     #     return resolve_login_user(email, password)
+=======
+    @strawberry.mutation
+    def createProduct(self, info: Info, data: ProductInput) -> AllProduct:
+        dto = resolve_create_product(info, data)
+        return AllProduct(**dto.__dict__)
+>>>>>>> 7dc976e (FetchProducts)
