@@ -5,6 +5,7 @@ from strawberry.types import Info
 from .db import supabase
 from .resolvers.users.resolver import resolve_create_user
 from .resolvers.search_filter.resolver import resolve_search_products
+from .resolvers.authentication.resolver import resolve_login_user
 from .resolvers.products.resolver import resolve_create_product, resolve_products
 from .resolvers.search_filter.resolver import resolve_products_by_ids
 from enum import Enum
@@ -103,6 +104,12 @@ class ProductSearch:
     created_at: datetime
 
 @strawberry.type
+class loginResponse:
+    success: bool
+    message: str
+    user: User | None
+
+@strawberry.type
 class Query:
     @strawberry.field
     def users(self, info: Info) -> List[User]:
@@ -142,6 +149,12 @@ class Mutation:
     def createProduct(self, info: Info, data: ProductInput) -> AllProduct:
         dto = resolve_create_product(info, data)
         return AllProduct(**dto.__dict__)
-    # @strawberry.mutation
-    # def login_user(self, email: str, password: str) -> login_response:
-    #     return resolve_login_user(email, password)
+    @strawberry.mutation
+    def login_user(self, email: str, password: str) -> loginResponse:
+        success, message, user = resolve_login_user(email, password).values()
+        response = loginResponse(
+            success= success,
+            message= message,
+            user= User(**user) if user else None
+        )   
+        return response

@@ -12,6 +12,24 @@ export const CREATE_USER = `
   }
 `;
 
+export const LOGIN_USER = `
+    mutation LoginUser($email: String!, $password: String!) {
+      loginUser(email: $email, password: $password) {
+        success
+        message
+        user {
+          id
+          name
+          email
+          createdAt
+          updatedAt
+        }
+      }
+    }
+  `;
+
+
+  
 export const CREATE_PRODUCT = `
   mutation CreateProduct($data: ProductInput!) {
     createProduct(data: $data) {

@@ -23,23 +23,35 @@ export default function AccountCreator() {
     e.preventDefault(); // prevent page reload
     setLoading(true);
     setMessage("");
+    if (!email.endsWith("@bu.edu")) {
+      setMessage("Please use your BU email");
+      setLoading(false);
+      return;
+    }
+    if (!password || password.length < 4) {
+      setMessage("Password must be at least 4 characters");
+      setLoading(false);
+      return;
+    }
 
-    try {
-      await createUser(username, email, password);
+    const result = await createUser(username, email, password);
+
+    setLoading(false);
+
+    if (result.error) {
+      setMessage("Error creating account. Check console.");
+      console.error(result.error);
+    } else {
       setMessage("Account created successfully!");
+      // optionally clear fields
       setEmail("");
       setUsername("");
       setPassword("");
       setTimeout(() => {
         router.push("/login");
-      }, 1000);
-    } catch (error: any) {
-      console.error(error);
-      setMessage(error.message || "Error creating account. Check console.");
-    } finally {
-      setLoading(false);
-    }
+    }, 1000);
   }
+}
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#EDEAE2]">

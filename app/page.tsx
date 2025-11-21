@@ -8,17 +8,19 @@ import { createUser } from "./services/createUser";
 export default function Home() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [status, setStatus] = useState<null | "loading" | "success" | string>(null);
 
+
   const handleCreateAccount = async () => {
-    if (!name || !email) {
+    if (!name || !email || !password) {
       setStatus("Name and email are required.");
       return;
     }
 
     try {
       setStatus("loading");
-      await createUser(name, email);
+      await createUser(name, email, password);
       setStatus("success");
       setName("");
       setEmail("");
