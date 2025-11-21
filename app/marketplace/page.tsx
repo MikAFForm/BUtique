@@ -5,7 +5,7 @@ import Header from "../components/header";
 import ProductCard from "./productCard";
 import { Empty } from "antd";
 import ProductDetailModal from "./productDetailModal";
-import { fetchAllProducts, AllProduct } from "../../app/services/productPosts";
+import { fetchAllProducts, AllProduct } from "../services/Productposts/AllproductPosts";
 
 const categories = [
   "All",

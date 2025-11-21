@@ -10,7 +10,7 @@ import {
 import { SlCalender } from "react-icons/sl";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { useRef, useState, useEffect } from "react";
-import { AllProduct } from "../services/productPosts";
+import { AllProduct } from "../services/Productposts/AllproductPosts";
 
 export default function ProductDetailModal({ product }: { product: AllProduct }) {
   const [liked, setLiked] = useState(false);

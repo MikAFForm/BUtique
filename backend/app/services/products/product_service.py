@@ -1,5 +1,6 @@
 from ...db import supabase
 from ...utils.datetime import parse_datetime
+from ...utils.uploadImage import upload_base64_image
 
 
 class ProductDTO:
@@ -49,10 +50,37 @@ def execute_get_all_products():
 
 
 def execute_create_product(data: dict):
+    safe_data = dict(data)
+    if "seller_id" in safe_data:
+        safe_data["seller_id"] = str(safe_data["seller_id"])
+    data = safe_data
+
     seller_id = data.get("seller_id")
     if not seller_id:
         raise ValueError("seller_id is required")
 
+    # Convert enums to string
+    if hasattr(data.get("condition"), "value"):
+        data["condition"] = data["condition"].value
+    if hasattr(data.get("status"), "value"):
+        data["status"] = data["status"].value
+    if hasattr(data.get("category"), "value"):
+        data["category"] = data["category"].value
+
+    data["description"] = data.get("description")
+    data["location"] = data.get("location")
+
+    image_inputs = data.get("image_urls", [])
+    final_image_urls = []
+
+    for img in image_inputs:
+        if img.startswith("http"):
+            final_image_urls.append(img)
+        else:
+            uploaded_url = upload_base64_image(img)
+            final_image_urls.append(uploaded_url)
+
+    data["image_urls"] = final_image_urls
     data["seller_name"] = get_seller_name(seller_id)
 
     resp = supabase.table("products").insert(data).execute()

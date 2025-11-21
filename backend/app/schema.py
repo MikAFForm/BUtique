@@ -79,8 +79,8 @@ class ProductInput:
     category: ProductCategory
     seller_id: strawberry.ID
 
-    description: str
-    location: str
+    description: Optional[str] = None
+    location: Optional[str] = None
 
     image_urls: List[str] = strawberry.field(default_factory=list)
     hashtags: List[str] = strawberry.field(default_factory=list)
