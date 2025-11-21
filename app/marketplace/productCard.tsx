@@ -4,7 +4,7 @@ import Image from "next/image";
 import { AiOutlineUser, AiOutlineComment } from "react-icons/ai";
 import { IoLocationOutline } from "react-icons/io5";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
-import { AllProduct } from "../services/productPosts";
+import { AllProduct } from "../services/Productposts/AllproductPosts";
 
 export type Props = {
   product: AllProduct;

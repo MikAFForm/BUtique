@@ -66,7 +66,7 @@ export default function Header() {
         {/* buttons */}  
         <div className="hidden lg:flex items-center gap-4">
         <Link
-          href="/post/create"
+          href="/post"
           className="px-4 py-2 rounded-lg bg-[#71808b] text-white font-medium hover:bg-[#5f6c75]"
         >
           Create A Post
@@ -98,7 +98,7 @@ export default function Header() {
           <AiOutlineComment className="text-2xl text-[#71808b] hover:text-gray-700" />
         </Link>
 
-        <Link href="/profile" className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+        <Link href="/dashboard/posts" className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
           <Image
             src={user.image}
             alt="profile"
