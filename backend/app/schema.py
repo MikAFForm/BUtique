@@ -56,14 +56,14 @@ class AllProduct:
     status: ProductStatus
     category: ProductCategory
 
-    description: Optional[str] = None
-    location: Optional[str] = None
+    description: Optional[str]
+    location: Optional[str]
 
-    seller_id: Optional[strawberry.ID] = None
-    seller_name: Optional[str] = None
+    seller_id: strawberry.ID
+    seller_name: str
 
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
 
     image_urls: List[str] = strawberry.field(default_factory=list)
     hashtags: List[str] = strawberry.field(default_factory=list)
