@@ -1,16 +1,21 @@
 import postText from "../data/postText.json";
+import { Barrio } from "next/font/google";
 
+const barrio = Barrio({
+  weight: "400",
+  subsets: ["latin"],
+});
 
 export default function PostPage() {
   return (
-    <div className="flex flex-col min-h-screen items-center justify-start bg-[rgb(36,39,48)] p-8">
-        
-        <h1 className="text-3xl font-bold text-center text-white mb-6">
-        Create a Post
-        </h1>
+    <div className="flex flex-col min-h-screen items-center justify-start bg-[#EDEAE2] p-8">
 
 
-            <form action="/api/post-item" method="POST" className="flex flex-col gap-4 p-6 border rounded w-full max-w-md">  
+
+        <h1 className={`${barrio.className} mt-3 text-5xl text-[#00013d]`}>Create a Post</h1>
+
+
+            <form action="/api/post-item" method="POST" className="flex flex-col gap-4 p-6 border rounded w-full max-w-md text-[#00013d]">  
          
                 <label htmlFor="title">Item Name</label>
                  <input
@@ -61,6 +66,12 @@ export default function PostPage() {
                     required
                     className="border p-2 rounded"
                 ></textarea>
+
+                <label htmlFor="description">Image</label>
+                <input
+                type="file" name="fileToUpload" id="fileToUpload"
+                required
+                ></input>
   
           
   
