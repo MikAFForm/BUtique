@@ -1,19 +1,5 @@
 import pytest
-from unittest.mock import patch
-
-
-# Mock the supabase client before importing the service
-@pytest.fixture(autouse=True)
-def mock_supabase_client():
-    """Mock the Supabase client to prevent initialization errors during tests."""
-    with patch('app.db.supabase'):
-        yield
-
-
-from app.services.products.product_service import (
-    execute_get_all_products,
-    execute_create_product,
-)
+from app.services.products import product_service
 
 
 class FakeResponse:
@@ -27,7 +13,7 @@ class FakeResponse:
 # TEST: execute_get_all_products
 # ============================================================
 
-def test_execute_get_all_products_success(mocker):
+def test_execute_get_all_products_success(monkeypatch):
     """Test successful retrieval of all products."""
     fake_rows = [
         {
@@ -39,34 +25,53 @@ def test_execute_get_all_products_success(mocker):
         }
     ]
     
-    mock_table = mocker.patch("app.services.products.product_service.supabase.table")
-    mock_table.return_value.select.return_value.order.return_value.execute.return_value = FakeResponse(fake_rows)
+    class MockOrder:
+        def execute(self):
+            return FakeResponse(fake_rows)
+
+    class MockSelect:
+        def order(self, *_args, **_kwargs):
+            return MockOrder()
+
+    class MockTable:
+        def select(self, *_args, **_kwargs):
+            return MockSelect()
+
+    monkeypatch.setattr("app.services.products.product_service.supabase.table", lambda *_: MockTable())
+    monkeypatch.setattr("app.services.products.product_service.parse_datetime", lambda x: x)
+    monkeypatch.setattr("app.services.products.product_service.get_seller_name", lambda *_: "Test Seller")
     
-    mocker.patch("app.services.products.product_service.parse_datetime", side_effect=lambda x: x)
-    mocker.patch("app.services.products.product_service.get_seller_name", return_value="Test Seller")
-    
-    results = execute_get_all_products()
+    results = product_service.execute_get_all_products()
     
     assert len(results) == 1
     assert results[0]["seller_name"] == "Test Seller"
 
 
-def test_execute_get_all_products_error(mocker):
+def test_execute_get_all_products_error(monkeypatch):
     """Test error handling when database query fails."""
-    mock_table = mocker.patch("app.services.products.product_service.supabase.table")
-    mock_table.return_value.select.return_value.order.return_value.execute.return_value = FakeResponse(
-        error="Database failure"
-    )
+    class MockOrder:
+        def execute(self):
+            return FakeResponse(error="Database failure")
+
+    class MockSelect:
+        def order(self, *_args, **_kwargs):
+            return MockOrder()
+
+    class MockTable:
+        def select(self, *_args, **_kwargs):
+            return MockSelect()
+
+    monkeypatch.setattr("app.services.products.product_service.supabase.table", lambda *_: MockTable())
     
     with pytest.raises(RuntimeError):
-        execute_get_all_products()
+        product_service.execute_get_all_products()
 
 
 # ============================================================
 # TEST: execute_create_product
 # ============================================================
 
-def test_execute_create_product_success(mocker):
+def test_execute_create_product_success(monkeypatch):
     """Test successful product creation with image upload."""
     fake_row = {
         "id": "1",
@@ -77,12 +82,18 @@ def test_execute_create_product_success(mocker):
         "image_urls": ["https://cdn.img/test.png"],
     }
     
-    mocker.patch("app.services.products.product_service.get_seller_name", return_value="Test Seller")
-    mocker.patch("app.services.products.product_service.upload_base64_image", return_value="https://cdn.img/test.png")
-    mocker.patch("app.services.products.product_service.parse_datetime", side_effect=lambda x: x)
-    
-    mock_table = mocker.patch("app.services.products.product_service.supabase.table")
-    mock_table.return_value.insert.return_value.execute.return_value = FakeResponse([fake_row])
+    monkeypatch.setattr("app.services.products.product_service.get_seller_name", lambda *_: "Test Seller")
+    monkeypatch.setattr("app.services.products.product_service.upload_base64_image", lambda *_: "https://cdn.img/test.png")
+    monkeypatch.setattr("app.services.products.product_service.parse_datetime", lambda x: x)
+
+    class MockTable:
+        def insert(self, _vals):
+            return self
+
+        def execute(self):
+            return FakeResponse([fake_row])
+
+    monkeypatch.setattr("app.services.products.product_service.supabase.table", lambda *_: MockTable())
     
     data = {
         "seller_id": "abc",
@@ -92,7 +103,7 @@ def test_execute_create_product_success(mocker):
         "category": "Electronics",
     }
     
-    dto = execute_create_product(data)
+    dto = product_service.execute_create_product(data)
     
     assert dto.id == "1"
     assert dto.seller_name == "Test Seller"
@@ -102,10 +113,10 @@ def test_execute_create_product_success(mocker):
 def test_execute_create_product_missing_seller_id():
     """Test that missing seller_id raises ValueError."""
     with pytest.raises(ValueError):
-        execute_create_product({})
+        product_service.execute_create_product({})
 
 
-def test_execute_create_product_preserves_http_images(mocker):
+def test_execute_create_product_preserves_http_images(monkeypatch):
     """Test that existing HTTP/HTTPS URLs are preserved without re-upload."""
     fake_row = {
         "id": "2",
@@ -116,17 +127,23 @@ def test_execute_create_product_preserves_http_images(mocker):
         "image_urls": ["http://images.com/photo.png"],
     }
     
-    mocker.patch("app.services.products.product_service.get_seller_name", return_value="Seller")
-    mocker.patch("app.services.products.product_service.parse_datetime", side_effect=lambda x: x)
-    
-    mock_table = mocker.patch("app.services.products.product_service.supabase.table")
-    mock_table.return_value.insert.return_value.execute.return_value = FakeResponse([fake_row])
+    monkeypatch.setattr("app.services.products.product_service.get_seller_name", lambda *_: "Seller")
+    monkeypatch.setattr("app.services.products.product_service.parse_datetime", lambda x: x)
+
+    class MockTable:
+        def insert(self, _vals):
+            return self
+
+        def execute(self):
+            return FakeResponse([fake_row])
+
+    monkeypatch.setattr("app.services.products.product_service.supabase.table", lambda *_: MockTable())
     
     data = {
         "seller_id": "abc",
         "image_urls": ["http://images.com/photo.png"],
     }
     
-    dto = execute_create_product(data)
+    dto = product_service.execute_create_product(data)
     
     assert dto.image_urls[0] == "http://images.com/photo.png"

@@ -1,13 +1,28 @@
 import { LOGIN_USER } from "@/lib/graphql/mutations";
 import { mutate } from "@/lib/graphql/client";
+import { setSessionUser } from "./session";
+
+type LoginUserResponse = {
+  loginUser: {
+    success: boolean;
+    message: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+      createdAt?: string | null;
+      updatedAt?: string | null;
+    } | null;
+  };
+};
 
 export async function authUser(email: string, password: string) {
-  console.log("Trigger1");
+  const result = await mutate<LoginUserResponse>(LOGIN_USER, { email, password });
 
-  const result = await mutate(LOGIN_USER, { email, password });
+  const payload = result.loginUser;
+  if (payload?.success && payload.user?.id) {
+    setSessionUser(payload.user.id, payload.user.name, payload.user.email);
+  }
 
-  console.log("GRAPHQL RESPONSE:", result);
-
-  // result.loginUser matches your GraphQL schema
-  return result.loginUser;
+  return payload;
 }
