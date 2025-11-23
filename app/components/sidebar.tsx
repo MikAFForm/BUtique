@@ -6,6 +6,8 @@ import { usePathname, useRouter, useSearchParams} from "next/navigation";
 import { Home, Heart, Bell, MessageSquare } from "lucide-react";
 import { Barrio } from "next/font/google";
 import { AiOutlineUser } from "react-icons/ai";
+import { useEffect, useState } from "react";
+import { clearSessionUser, getSessionProfile } from "@/app/services/session";
 
 const barrio = Barrio({
   weight: "400",
@@ -16,6 +18,8 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [displayName, setDisplayName] = useState("Guest");
+  const [displayEmail, setDisplayEmail] = useState("guest@bu.edu");
 
   const navItems = [
     { name: "Posts", href: "/dashboard/posts", icon: <Home size={18} /> },
@@ -23,17 +27,17 @@ export default function Sidebar() {
     { name: "Notification", href: "/dashboard/notification", icon: <Bell size={18} /> },
     { name: "Chats", href: "/dashboard/chats", icon: <MessageSquare size={18} /> },
   ];
-  //  user info laceholder for actual auth logic
- const user = {
-    name: searchParams.get("name") || "Guest",
-    email: searchParams.get("email") || "guest@bu.edu",
-    image: searchParams.get("image") || "/sampleUser.png",
-  };
+  useEffect(() => {
+    const profile = getSessionProfile();
+    if (profile.name) setDisplayName(profile.name);
+    if (profile.email) setDisplayEmail(profile.email);
+  }, []);
 
   const handleLogout = () => {
     const confirmed = confirm("Are you sure you want to log out?");
     if (!confirmed) return;
-    router.push("/signin");
+    clearSessionUser();
+    router.push("/login");
   };
 
   return (
@@ -82,7 +86,7 @@ export default function Sidebar() {
         <div className="flex items-center gap-3 bg-white px-3 py-3 rounded-xl shadow-sm border border-gray-200">
           <Link href="/profile" className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
             <Image
-              src={user.image}
+              src="/sampleUser.png"
               alt="profile"
               width={56}
               height={56}
@@ -90,8 +94,8 @@ export default function Sidebar() {
             />
           </Link>
           <div className="flex-1 text-sm">
-            <p className="font-medium">{user.name}</p>
-            <p className="text-gray-500 text-xs">{user.email}</p>
+            <p className="font-medium">{displayName}</p>
+            <p className="text-gray-500 text-xs">{displayEmail}</p>
           </div>
 
           <button
