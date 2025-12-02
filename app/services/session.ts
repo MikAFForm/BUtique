@@ -16,6 +16,7 @@ function clearCookie(key: string) {
 }
 
 function readCookie(key: string): string | null {
+  if (typeof document === "undefined") return null;
   const cookies = document.cookie?.split(";") ?? [];
   for (const raw of cookies) {
     const [k, ...rest] = raw.trim().split("=");

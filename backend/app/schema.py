@@ -5,6 +5,12 @@ from strawberry.types import Info
 from .db import supabase
 from .resolvers.users.resolver import resolve_create_user
 from .resolvers.search_filter.resolver import resolve_search_products
+from .resolvers.chats.resolver import (
+    resolve_chat_sessions,
+    resolve_messages_by_session,
+    resolve_create_chat_session,
+    resolve_send_message,
+)
 from .resolvers.authentication.resolver import resolve_login_user
 from .resolvers.products.resolver import resolve_create_product, resolve_products
 from .resolvers.search_filter.resolver import resolve_products_by_ids
@@ -110,11 +116,42 @@ class loginResponse:
     user: User | None
 
 @strawberry.type
+class ChatSession:
+    id: strawberry.ID
+    product_id: strawberry.ID
+    buyer_id: strawberry.ID
+    seller_id: strawberry.ID
+    created_at: datetime
+    updated_at: datetime
+
+@strawberry.type
+class Message:
+    id: strawberry.ID
+    session_id: strawberry.ID
+    sender_id: strawberry.ID
+    body: str
+    created_at: datetime
+
+@strawberry.type
 class Query:
     @strawberry.field
     def users(self, info: Info) -> List[User]:
         result = supabase.table("users").select("*").execute()
         return [User(**row) for row in _unwrap(result)]
+
+    @strawberry.field
+    def user(self, info: Info, id: strawberry.ID) -> Optional[User]:
+        result = (
+            supabase.table("users")
+            .select("*")
+            .eq("id", str(id))
+            .single()
+            .execute()
+        )
+        data = getattr(result, "data", None)
+        if not data:
+            return None
+        return User(**data)
 
     @strawberry.field
     def allProducts(self, info) -> List[AllProduct]:
@@ -136,6 +173,26 @@ class Query:
         rows = resolve_products_by_ids([str(i) for i in ids])
         return [AllProduct(**row) for row in rows]
 
+    @strawberry.field
+    def chatSessions(
+        self,
+        info: Info,
+        buyer_id: Optional[strawberry.ID] = None,
+        seller_id: Optional[strawberry.ID] = None,
+        product_id: Optional[strawberry.ID] = None,
+    ) -> List[ChatSession]:
+        rows = resolve_chat_sessions(
+            buyer_id=str(buyer_id) if buyer_id else None,
+            seller_id=str(seller_id) if seller_id else None,
+            product_id=str(product_id) if product_id else None,
+        )
+        return [ChatSession(**row) for row in rows]
+
+    @strawberry.field
+    def messages(self, info: Info, session_id: strawberry.ID) -> List[Message]:
+        rows = resolve_messages_by_session(str(session_id))
+        return [Message(**row) for row in rows]
+
 # --------------------------------MUTATION---------------------------------------------
 
 @strawberry.type
@@ -149,6 +206,7 @@ class Mutation:
     def createProduct(self, info: Info, data: ProductInput) -> AllProduct:
         dto = resolve_create_product(info, data)
         return AllProduct(**dto.__dict__)
+    
     @strawberry.mutation
     def login_user(self, email: str, password: str) -> loginResponse:
         success, message, user = resolve_login_user(email, password).values()
@@ -158,3 +216,31 @@ class Mutation:
             user= User(**user) if user else None
         )   
         return response
+
+    @strawberry.mutation
+    def createChatSession(
+        self,
+        product_id: strawberry.ID,
+        buyer_id: strawberry.ID,
+        seller_id: strawberry.ID,
+    ) -> ChatSession:
+        row = resolve_create_chat_session(
+            product_id=str(product_id),
+            buyer_id=str(buyer_id),
+            seller_id=str(seller_id),
+        )
+        return ChatSession(**row)
+
+    @strawberry.mutation
+    def sendMessage(
+        self,
+        session_id: strawberry.ID,
+        sender_id: strawberry.ID,
+        body: str,
+    ) -> Message:
+        row = resolve_send_message(
+            session_id=str(session_id),
+            sender_id=str(sender_id),
+            body=body,
+        )
+        return Message(**row)
