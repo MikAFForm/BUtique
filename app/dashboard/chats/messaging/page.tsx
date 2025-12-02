@@ -75,7 +75,7 @@ export default function ChatDetailPage() {
   return (
     <>
       <Sidebar />
-      <div className="ml-64 flex flex-col h-screen">
+      <div className="ml-64 flex flex-col h-screen bg-gray-50 text-gray-900">
         <div className="px-10 py-4 border-b bg-white flex items-center gap-4">
           <button
             onClick={() => router.push("/dashboard/chats")}
@@ -86,7 +86,7 @@ export default function ChatDetailPage() {
           <h1 className="text-2xl font-bold">Conversation</h1>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-10 py-6 space-y-3 bg-[#f7f7f7]">
+        <div className="flex-1 overflow-y-auto px-10 py-6 space-y-3 bg-gray-50">
           {status === "loading" && <p>Loading...</p>}
           {status === "error" && <p className="text-red-600">{error}</p>}
 

@@ -74,7 +74,7 @@ export default function ChatsPage() {
   return (
     <>
       <Sidebar />
-      <div className="ml-64 px-10 py-10">
+      <div className="ml-64 px-10 py-10 min-h-screen bg-gray-50 text-gray-900">
         <h1 className="text-3xl font-bold mb-6">Chats</h1>
 
         {status === "loading" && (
