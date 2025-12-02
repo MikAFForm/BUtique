@@ -1,8 +1,8 @@
 // GraphQL query strings
 
-export const GET_USERS_NAME = `
-  query GetUsersName {
-    users {
+export const GET_USER_NAME_BY_ID = `
+  query GetUserNameById($id: ID!) {
+    user(id: $id) {
       id
       name
     }
@@ -55,6 +55,33 @@ export const PRODUCTS_BY_IDS = `
       updatedAt
       imageUrls
       hashtags
+    }
+  }
+`;
+
+export const GET_CHAT_SESSIONS = `
+  query ChatSessions($buyerId: ID, $sellerId: ID, $productId: ID) {
+    chatSessions(
+      buyerId: $buyerId
+      sellerId: $sellerId
+      productId: $productId
+    ) {
+      id
+      productId
+      buyerId
+      sellerId
+    }
+  }
+`;
+
+export const GET_MESSAGES = `
+  query Messages($sessionId: ID!) {
+    messages(sessionId: $sessionId) {
+      id
+      sessionId
+      senderId
+      body
+      createdAt
     }
   }
 `;

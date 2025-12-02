@@ -50,3 +50,15 @@ export const CREATE_PRODUCT = `
     }
   }
 `;
+
+export const SEND_MESSAGE = `
+  mutation SendMessage($sessionId: ID!, $senderId: ID!, $body: String!) {
+    sendMessage(sessionId: $sessionId, senderId: $senderId, body: $body) {
+      id
+      sessionId
+      senderId
+      body
+      createdAt
+    }
+  }
+`;
