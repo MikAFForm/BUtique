@@ -3,7 +3,7 @@
 import { query } from "@/lib/graphql/client";
 import { GET_CHAT_SESSIONS, PRODUCTS_BY_IDS, GET_USER_NAME_BY_ID, GET_MESSAGES } from "@/lib/graphql/queries";
 import { mutate } from "@/lib/graphql/client";
-import { SEND_MESSAGE } from "@/lib/graphql/mutations";
+import { SEND_MESSAGE, CREATE_CHAT_SESSION } from "@/lib/graphql/mutations";
 
 export type ChatSession = {
   id: string;
@@ -68,4 +68,20 @@ export async function sendMessage(input: {
     body: input.body,
   });
   return result.sendMessage;
+}
+
+export async function createChatSession(input: {
+  productId: string;
+  buyerId: string;
+  sellerId: string;
+}): Promise<ChatSession> {
+  const result = await mutate<{ createChatSession: ChatSession }>(
+    CREATE_CHAT_SESSION,
+    {
+      productId: input.productId,
+      buyerId: input.buyerId,
+      sellerId: input.sellerId,
+    }
+  );
+  return result.createChatSession;
 }
