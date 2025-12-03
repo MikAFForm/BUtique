@@ -3,7 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Sidebar from "@/app/components/sidebar";
-import { fetchMessages, sendMessage, type ChatMessage } from "@/app/services/chats";
+import {
+  fetchMessages,
+  fetchChatSessions,
+  fetchProductsByIds,
+  fetchUserNameById,
+  sendMessage,
+  type ChatMessage,
+} from "@/app/services/chats";
 import { getSessionProfile } from "@/app/services/session";
 
 export default function ChatDetailPage() {
@@ -18,6 +25,8 @@ export default function ChatDetailPage() {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const [productTitle, setProductTitle] = useState<string>("");
+  const [opponentName, setOpponentName] = useState<string>("");
 
   useEffect(() => {
     if (!sessionId) {
@@ -30,6 +39,26 @@ export default function ChatDetailPage() {
       try {
         const data = await fetchMessages(sessionId);
         setMessages(data);
+
+        // Resolve session details to show product name and opponent name
+        const sessions = await fetchChatSessions();
+        const session = sessions.find((s) => s.id === sessionId);
+        if (session) {
+          const products = await fetchProductsByIds([session.productId]);
+          if (products?.[0]?.name) {
+            setProductTitle(products[0].name);
+          }
+          const currentUserId = profile.id;
+          const opponentId =
+            currentUserId && session.buyerId === currentUserId
+              ? session.sellerId
+              : session.buyerId;
+          if (opponentId) {
+            const name = await fetchUserNameById(opponentId);
+            if (name) setOpponentName(name);
+          }
+        }
+
         setStatus("idle");
       } catch (err) {
         console.error(err);
@@ -83,7 +112,9 @@ export default function ChatDetailPage() {
           >
             ← Back
           </button>
-          <h1 className="text-2xl font-bold">Conversation</h1>
+          <h1 className="text-2xl font-bold">
+            {productTitle || "Conversation"}
+          </h1>
         </div>
 
         <div className="flex-1 overflow-y-auto px-10 py-6 space-y-3 bg-gray-50">
@@ -109,6 +140,9 @@ export default function ChatDetailPage() {
                         {new Date(m.createdAt).toLocaleString()}
                       </p>
                       <p className="text-base whitespace-pre-wrap">{m.body}</p>
+                      {!isMe && opponentName && (
+                        <p className="text-xs opacity-80 mt-1">{opponentName}</p>
+                      )}
                     </div>
                   </div>
                 );
