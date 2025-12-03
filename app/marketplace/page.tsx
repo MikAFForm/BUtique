@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import Header from "../components/header";
 import ProductCard from "./productCard";
 import { Empty } from "antd";
@@ -10,8 +10,10 @@ import {
   AllProduct,
   categories,
 } from "../services/Productposts/AllproductPosts";
-import { toggleInterest } from "../services/toggleInterest";
 import { getSessionProfile } from "../services/session";
+import { toggleInterest } from "../services/toggleInterest";
+
+let cachedProducts: AllProduct[] | null = null;
 
 export default function MarketplacePage() {
   const [loading, setLoading] = useState(true);
@@ -20,10 +22,14 @@ export default function MarketplacePage() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedProduct, setSelectedProduct] = useState<AllProduct | null>(null);
 
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async (force = false) => {
+    setLoading(true);
     try {
+      if (!force && cachedProducts) {
+        setAllProducts(cachedProducts);
+        return cachedProducts;
+      }
       const products = await fetchAllProducts();
-
       const visibleProducts = products
         .filter((p) => p.status === "Available" || p.status === "Hold")
         .sort((a, b) => {
@@ -31,20 +37,21 @@ export default function MarketplacePage() {
           const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           return dateB - dateA;
         });
-
       setAllProducts(visibleProducts);
+      cachedProducts = visibleProducts;
       return visibleProducts;
     } catch (error) {
       console.error("Failed to fetch all products:", error);
+      setAllProducts([]);
       return [];
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadProducts();
-  }, []);
+  }, [loadProducts]);
 
   const handleSearchResults = (results: AllProduct[]) => {
     setSearchResults(results);
@@ -52,21 +59,21 @@ export default function MarketplacePage() {
   };
 
   const handleToggleInterest = async (productId: string) => {
+    const profile = getSessionProfile();
+    if (!profile?.id) {
+      alert("Please log in to save favorites.");
+      return;
+    }
+
+    const product = (searchResults ?? allProducts).find((p) => p.id === productId);
+    if (product && product.sellerId === profile.id) {
+      alert("You cannot toggle interest on your own product.");
+      return;
+    }
+
     try {
-      const profile = getSessionProfile();
-      if (!profile?.id) {
-        alert("Please log in to save favorites.");
-        return;
-      }
-
-      const product = (searchResults ?? allProducts).find((p) => p.id === productId);
-      if (product && product.sellerId === profile.id) {
-        alert("You cannot toggle interest on your own product.");
-        return;
-      }
-
       await toggleInterest(profile.id, productId);
-      const refreshed = await loadProducts();
+      const refreshed = await loadProducts(true);
 
       if (selectedProduct) {
         const updated = refreshed.find((p) => p.id === selectedProduct.id);
@@ -74,8 +81,7 @@ export default function MarketplacePage() {
           setSelectedProduct(updated);
         }
       }
-
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof Error && error.message.includes("own product")) {
         alert(error.message);
         return;
@@ -83,17 +89,18 @@ export default function MarketplacePage() {
       console.error("Toggle interest failed:", error);
     }
   };
- 
-  const filteredList =
-    activeCategory === "All"
-      ? allProducts
-      : allProducts.filter((p) => p.category === activeCategory);
 
-  const displayList = searchResults ?? filteredList;
+  const displayList = useMemo(
+    () =>
+      (searchResults ?? allProducts).filter((p) =>
+        activeCategory === "All" ? true : p.category === activeCategory
+      ),
+    [activeCategory, allProducts, searchResults]
+  );
 
   return (
     <>
-      <Header onSearchResults={handleSearchResults} />
+        <Header onSearchResults={handleSearchResults} />
 
       <div className="px-6 py-8 max-w-80% mx-auto">
         {/* Category Buttons */}

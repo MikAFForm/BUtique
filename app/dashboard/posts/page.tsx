@@ -7,7 +7,10 @@ import Sidebar from "../../components/sidebar";
 import { Empty } from "antd";
 import PostEditModal from "./postEditModal";
 import { AllProduct } from "@/app/services/Productposts/AllproductPosts";
-import { useDashboardPosts } from "@/app/services/dashboardPosts";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { fetchAllProducts } from "@/app/services/Productposts/AllproductPosts";
+import { getSessionProfile } from "@/app/services/session";
+import { deleteProductPost } from "@/app/services/Productposts/deleteProductPost";
 
 function ConfirmDeleteModal({ open, onCancel, onConfirm }) {
   if (!open) return null;
@@ -42,23 +45,112 @@ function ConfirmDeleteModal({ open, onCancel, onConfirm }) {
 
 
 export default function PostsPage() {
-  const {
-    loading,
-    userId,
-    selectedPost,
-    isEditOpen,
-    deleteModalOpen,
-    sortedPosts,
-    openEdit,
-    closeEdit,
-    openDeleteConfirm,
-    closeDeleteConfirm,
-    confirmDelete,
-    formatDate,
-    getStatusLabel,
-    getStatusStyle,
-    setPosts,
-  } = useDashboardPosts();
+  const [selectedPost, setSelectedPost] = useState<AllProduct | null>(null);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<AllProduct | null>(null);
+  const [posts, setPosts] = useState<AllProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const skeletons = Array.from({ length: 3 });
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const profile = getSessionProfile();
+        setUserId(profile.id);
+
+        if (!profile.id) {
+          setPosts([]);
+          return;
+        }
+
+        const all = await fetchAllProducts();
+        const mine = all.filter((p) => p.sellerId === profile.id);
+        setPosts(mine);
+      } catch (err) {
+        console.error("Failed to load user posts:", err);
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
+  const openEdit = useCallback((post: AllProduct) => {
+    setSelectedPost(post);
+    setIsEditOpen(true);
+  }, []);
+
+  const closeEdit = useCallback(() => {
+    setIsEditOpen(false);
+    setSelectedPost(null);
+  }, []);
+
+  const openDeleteConfirm = useCallback((post: AllProduct) => {
+    setPostToDelete(post);
+    setDeleteModalOpen(true);
+  }, []);
+
+  const closeDeleteConfirm = useCallback(() => {
+    setDeleteModalOpen(false);
+    setPostToDelete(null);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!postToDelete) return;
+    try {
+      const ok = await deleteProductPost(postToDelete.id);
+      if (!ok) {
+        alert("Delete failed. You may not have permission to delete this item.");
+        return;
+      }
+      setPosts((prev) => prev.filter((p) => p.id !== postToDelete.id));
+      closeDeleteConfirm();
+    } catch (err) {
+      console.error("Failed to delete product:", err);
+      alert("Failed to delete product.");
+    }
+  }, [postToDelete, closeDeleteConfirm]);
+
+  const getStatusStyle = useCallback((status: string) => {
+    switch (status.toLowerCase()) {
+      case "available":
+        return "bg-[#00C853] text-white";
+      case "hold":
+        return "bg-[#FFC107] text-white";
+      case "sold":
+        return "bg-[#9E9E9E] text-white";
+      default:
+        return "bg-gray-400 text-white";
+    }
+  }, []);
+
+  const formatDate = useCallback((dateInput?: string | null) => {
+    if (!dateInput) return "Unknown";
+    const date = new Date(dateInput);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  }, []);
+
+  const getStatusLabel = useCallback((status?: string | null) => {
+    if (!status) return "Unknown";
+    return status === "Available" ? "Active" : status;
+  }, []);
+
+  const sortedPosts = useMemo(() => {
+    return [...posts].sort((a, b) => {
+      const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return bDate - aDate;
+    });
+  }, [posts]);
 
   const handleUpdated = (updated: AllProduct) => {
     setPosts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
@@ -88,7 +180,32 @@ export default function PostsPage() {
        />
 
         {loading ? (
-          <div className="text-gray-500 text-center mt-16">Loading your posts...</div>
+          <div className="flex flex-col gap-6 mt-6">
+            {skeletons.map((_, idx) => (
+              <div
+                key={idx}
+                className="w-full border rounded-xl shadow-sm bg-white p-5 flex gap-6 animate-pulse"
+              >
+                <div className="w-[260px] h-[150px] bg-gray-200 rounded-lg" />
+                <div className="flex flex-col flex-1 gap-4">
+                  <div className="flex gap-3 items-center">
+                    <div className="h-5 w-32 bg-gray-200 rounded" />
+                    <div className="h-5 w-20 bg-gray-200 rounded" />
+                    <div className="h-5 w-16 bg-gray-200 rounded ml-auto" />
+                  </div>
+                  <div className="h-4 w-full bg-gray-200 rounded" />
+                  <div className="h-4 w-2/3 bg-gray-200 rounded" />
+                  <div className="flex justify-between">
+                    <div className="h-5 w-24 bg-gray-200 rounded" />
+                    <div className="flex gap-2">
+                      <div className="h-9 w-24 bg-gray-200 rounded" />
+                      <div className="h-9 w-32 bg-gray-200 rounded" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : !userId ? (
           <div className="flex flex-col items-center justify-center mt-20 text-center">
             <Empty

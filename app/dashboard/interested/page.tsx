@@ -4,10 +4,88 @@ import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "../../components/sidebar";
 import { Empty } from "antd";
-import { useInterestedPosts } from "@/app/services/interestedPosts";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { getSessionProfile } from "@/app/services/session";
+import { fetchInterestedProducts } from "@/app/services/Productposts/interestedProducts";
+import { AllProduct } from "@/app/services/Productposts/AllproductPosts";
+import { toggleInterest } from "@/app/services/toggleInterest";
 
 export default function PostsPage() {
-  const { posts, loading, userId, getStatusStyle, cancelInterest } = useInterestedPosts();
+  const [posts, setPosts] = useState<AllProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const skeletons = Array.from({ length: 3 });
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      const profile = getSessionProfile();
+      setUserId(profile.id);
+      if (!profile.id) {
+        setPosts([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const items = await fetchInterestedProducts();
+        setPosts(items);
+      } catch (err) {
+        console.error("Failed to load interested products:", err);
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
+  const getStatusStyle = useCallback((status: string) => {
+    switch (status.toLowerCase()) {
+      case "available":
+        return "bg-[#00C853] text-white";
+      case "hold":
+        return "bg-[#FFC107] text-white";
+      case "sold":
+        return "bg-[#9E9E9E] text-white";
+      default:
+        return "bg-gray-400 text-white";
+    }
+  }, []);
+
+  const cancelInterest = useCallback(
+    async (productId: string) => {
+      const profile = getSessionProfile();
+      if (!profile.id) {
+        alert("Please log in first.");
+        return;
+      }
+      const target = posts.find((p) => p.id === productId);
+      if (target && target.sellerId === profile.id) {
+        alert("You cannot toggle interest on your own post.");
+        return;
+      }
+      try {
+        await toggleInterest(profile.id, productId);
+        setPosts((prev) => prev.filter((p) => p.id !== productId));
+      } catch (err: any) {
+        const message = err?.message || "Failed to update interest.";
+        alert(message);
+      }
+    },
+    [posts]
+  );
+
+  const sortedPosts = useMemo(
+    () =>
+      [...posts].sort((a, b) => {
+        const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return bDate - aDate;
+      }),
+    [posts]
+  );
 
   return (
     <>
@@ -23,7 +101,33 @@ export default function PostsPage() {
         </div>
 
         {loading ? (
-          <div className="text-gray-500 text-center mt-20">Loading your interested posts...</div>
+          <div className="flex flex-col gap-6 mt-6">
+            {skeletons.map((_, idx) => (
+              <div
+                key={idx}
+                className="w-full border rounded-xl shadow-sm bg-white p-5 flex gap-6 animate-pulse"
+              >
+                <div className="w-[260px] h-[150px] bg-gray-200 rounded-lg" />
+                <div className="flex flex-col flex-1 gap-4">
+                  <div className="flex gap-3 items-center">
+                    <div className="h-5 w-32 bg-gray-200 rounded" />
+                    <div className="h-5 w-20 bg-gray-200 rounded" />
+                    <div className="h-5 w-20 bg-gray-200 rounded" />
+                    <div className="h-5 w-16 bg-gray-200 rounded ml-auto" />
+                  </div>
+                  <div className="h-4 w-full bg-gray-200 rounded" />
+                  <div className="h-4 w-2/3 bg-gray-200 rounded" />
+                  <div className="flex justify-between">
+                    <div className="h-5 w-24 bg-gray-200 rounded" />
+                    <div className="flex gap-2">
+                      <div className="h-9 w-24 bg-gray-200 rounded" />
+                      <div className="h-9 w-32 bg-gray-200 rounded" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : !userId ? (
           <div className="flex flex-col items-center justify-center mt-20 text-center">
             <Empty
@@ -33,7 +137,7 @@ export default function PostsPage() {
               }
             />
           </div>
-        ) : posts.length === 0 ? (
+        ) : sortedPosts.length === 0 ? (
           <div className="flex flex-col items-center justify-center mt-20 text-center">
             <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -51,7 +155,7 @@ export default function PostsPage() {
         ) : (
           <div className="flex flex-col gap-8">
             
-          {posts.map((post) => (
+          {sortedPosts.map((post) => (
               <div
                 key={post.id}
                 className="w-full border rounded-xl shadow-sm bg-white p-5 flex gap-6"
