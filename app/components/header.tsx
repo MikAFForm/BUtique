@@ -43,22 +43,26 @@ export default function Header({ onSearchResults }: HeaderProps) {
     <header className="w-full h-16 bg-[#f1efe8] px-6 py-3 flex items-center justify-between shadow-sm">
 
       <div className="flex items-center gap-6 pt-1">
-        <Link href="/marketplace">
-          <div className="flex items-center gap-1 cursor-pointer"
-                onClick={() => router.refresh()} >
-            <Image
-                src="/icon.png"
-                width={60}
-                height={60}
-                alt="BUtique"
-                className="object-contain"
-                priority
-                unoptimized
-              />
-            <span className={`${barrio.className} mt-3 text-5xl text-[#00013d]`}>
-              BUtique
-            </span>
-          </div>
+        <Link
+          href="/marketplace"
+          onClick={(e) => {
+            e.preventDefault();
+            window.location.href = "/marketplace";
+          }}
+          className="flex items-center gap-1 cursor-pointer"
+        >
+          <Image
+            src="/icon.png"
+            width={60}
+            height={60}
+            alt="BUtique"
+            className="object-contain"
+            priority
+            unoptimized
+          />
+          <span className={`${barrio.className} mt-3 text-5xl text-[#00013d]`}>
+            BUtique
+          </span>
         </Link>
 
         {/* Search Bar */}

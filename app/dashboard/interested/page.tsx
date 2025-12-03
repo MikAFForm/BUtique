@@ -26,31 +26,6 @@ export default function PostsPage() {
         {loading ? (
           <div className="flex flex-col gap-6 mt-6">
             <p className="text-gray-600 text-center">Loading your interested posts...</p>
-            {skeletons.map((_, idx) => (
-              <div
-                key={idx}
-                className="w-full border rounded-xl shadow-sm bg-white p-5 flex gap-6 animate-pulse"
-              >
-                <div className="w-[260px] h-[150px] bg-gray-200 rounded-lg" />
-                <div className="flex flex-col flex-1 gap-4">
-                  <div className="flex gap-3 items-center">
-                    <div className="h-5 w-32 bg-gray-200 rounded" />
-                    <div className="h-5 w-20 bg-gray-200 rounded" />
-                    <div className="h-5 w-20 bg-gray-200 rounded" />
-                    <div className="h-5 w-16 bg-gray-200 rounded ml-auto" />
-                  </div>
-                  <div className="h-4 w-full bg-gray-200 rounded" />
-                  <div className="h-4 w-2/3 bg-gray-200 rounded" />
-                  <div className="flex justify-between">
-                    <div className="h-5 w-24 bg-gray-200 rounded" />
-                    <div className="flex gap-2">
-                      <div className="h-9 w-24 bg-gray-200 rounded" />
-                      <div className="h-9 w-32 bg-gray-200 rounded" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         ) : !userId ? (
           <div className="flex flex-col items-center justify-center mt-20 text-center">

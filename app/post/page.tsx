@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import { Barrio } from "next/font/google";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,7 @@ const barrio = Barrio({
 
 export default function PostPage() {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement | null>(null);
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [hashtags, setHashtags] = useState<string[]>([]);
@@ -102,6 +103,7 @@ const handleImages = (e: React.ChangeEvent<HTMLInputElement>) => {
       </h1>
 
       <form
+        ref={formRef}
         onSubmit={handleSubmit}
         className="w-full max-w-2xl bg-white shadow-md border border-gray-200 rounded-2xl p-8 space-y-6"
       >
@@ -218,13 +220,28 @@ const handleImages = (e: React.ChangeEvent<HTMLInputElement>) => {
         </div>
         
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
-        >
-          {loading ? "Posting..." : "Post Item"}
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              formRef.current?.reset();
+              setImages([]);
+              setHashtags([]);
+              setHashtagInput("");
+              router.push("/marketplace");
+            }}
+            className="w-full sm:w-1/2 bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-300 transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full sm:w-1/2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+          >
+            {loading ? "Posting..." : "Post Item"}
+          </button>
+        </div>
       </form>
     </div>
   );
