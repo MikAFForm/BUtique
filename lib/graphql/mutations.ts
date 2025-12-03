@@ -29,7 +29,6 @@ export const LOGIN_USER = `
   `;
 
 
-  
 export const CREATE_PRODUCT = `
   mutation CreateProduct($data: ProductInput!) {
     createProduct(data: $data) {
@@ -48,5 +47,21 @@ export const CREATE_PRODUCT = `
       imageUrls
       hashtags
     }
+  }
+`;
+
+
+export const CREATE_OTP = `
+  mutation CreateOtp($email: String!) {
+    createOtp(email: $email) {
+      success
+      message 
+    }
+  }
+`;
+
+export const AUTH_OTP = `
+  mutation AuthOtp($email: String!, $otp: Int!) {
+    authOtp(email: $email, otp: $otp)
   }
 `;
