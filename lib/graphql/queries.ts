@@ -42,7 +42,6 @@ export const GET_ALL_PRODUCTS = `
     }
   }
 }
-
 `;
 
 export const PRODUCTS_BY_IDS = `

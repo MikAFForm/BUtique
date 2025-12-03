@@ -27,6 +27,8 @@ from .resolvers.seller.resolver import (
     resolve_delete_product,
     resolve_update_product,
 )
+from .resolvers.authentication.resolver import resolve_create_otp
+from .resolvers.authentication.resolver import resolve_auth_otp
 
 from enum import Enum
 
@@ -39,6 +41,10 @@ class User:
     created_at: datetime
     updated_at: datetime
 
+@strawberry.type
+class OTP:
+    success: bool
+    message: str
 
 def _unwrap(response):
     data = getattr(response, "data", None)
@@ -95,9 +101,9 @@ class AllProduct:
     image_urls: List[str] = strawberry.field(default_factory=list)
     hashtags: List[str] = strawberry.field(default_factory=list)
 
-    is_user_interested: bool = strawberry.field(name="isUserInterested")
-
-    
+    is_user_interested: bool = strawberry.field(
+        default=False, name="isUserInterested"
+    )
     interested_count: int = 0
     interested_buyers: List[BuyerInfo] = strawberry.field(default_factory=list)
 
@@ -270,6 +276,18 @@ class Query:
 
 @strawberry.type
 class Mutation:
+    @strawberry.mutation
+    def createOtp(self, email: str) -> OTP:
+        response = resolve_create_otp(email)
+        return OTP(
+            success=response["success"],
+            message=response["message"],
+        )
+
+    @strawberry.mutation
+    def authOtp(self, email: str, otp: int) -> bool:
+        return resolve_auth_otp(email, otp)
+
     @strawberry.mutation
     def create_user(self, name: str, email: str, password: str) -> User:
         row = resolve_create_user(name, email, password)
