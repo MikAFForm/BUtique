@@ -62,6 +62,17 @@ export const SEND_MESSAGE = `
   }
 `;
 
+export const CREATE_CHAT_SESSION = `
+  mutation CreateChatSession($productId: ID!, $buyerId: ID!, $sellerId: ID!) {
+    createChatSession(productId: $productId, buyerId: $buyerId, sellerId: $sellerId) {
+      id
+      productId
+      buyerId
+      sellerId
+    }
+  }
+`;
+
 export const CREATE_OTP = `
   mutation CreateOtp($email: String!) {
     createOtp(email: $email) {

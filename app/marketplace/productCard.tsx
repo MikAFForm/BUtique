@@ -5,6 +5,9 @@ import { AiOutlineUser, AiOutlineComment } from "react-icons/ai";
 import { IoLocationOutline } from "react-icons/io5";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import { AllProduct } from "../services/Productposts/AllproductPosts";
+import { useRouter } from "next/navigation";
+import { getSessionProfile } from "../services/session";
+import { createChatSession } from "../services/chats";
 
 export type Props = {
   product: AllProduct;
@@ -12,6 +15,7 @@ export type Props = {
 };
 
 export default function ProductCard({ product, onInterest }: Props) {
+  const router = useRouter();
 
   const productImage =
     product.imageUrls && product.imageUrls.length > 0
@@ -86,9 +90,33 @@ export default function ProductCard({ product, onInterest }: Props) {
       </div>
 
       <button
-        onClick={(e) => {
+        onClick={async (e) => {
           e.stopPropagation();
-          alert("Chat coming soon!");
+          const profile = getSessionProfile();
+          if (!profile.id) {
+            alert("Please log in to contact the seller.");
+            router.push("/login");
+            return;
+          }
+          if (!product.sellerId) {
+            alert("Seller not available.");
+            return;
+          }
+          try {
+            const session = await createChatSession({
+              productId: product.id,
+              buyerId: profile.id,
+              sellerId: product.sellerId,
+            });
+            router.push(
+              `/dashboard/chats/messaging?sessionId=${encodeURIComponent(
+                session.id
+              )}`
+            );
+          } catch (err) {
+            console.error(err);
+            alert("Failed to start chat with seller.");
+          }
         }}
         className="mt-5 w-full bg-[#71808b] hover:bg-[#5f6c75] text-white py-2 rounded-lg flex items-center justify-center gap-2 text-sm"
       >
