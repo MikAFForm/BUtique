@@ -13,20 +13,20 @@ export const CREATE_USER = `
 `;
 
 export const LOGIN_USER = `
-  mutation LoginUser($email: String!, $password: String!) {
-    loginUser(email: $email, password: $password) {
-      success
-      message
-      user {
-        id
-        name
-        email
-        createdAt
-        updatedAt
+    mutation LoginUser($email: String!, $password: String!) {
+      loginUser(email: $email, password: $password) {
+        success
+        message
+        user {
+          id
+          name
+          email
+          createdAt
+          updatedAt
+        }
       }
     }
-  }
-`;
+  `;
 
 export const CREATE_PRODUCT = `
   mutation CreateProduct($data: ProductInput!) {
@@ -45,17 +45,6 @@ export const CREATE_PRODUCT = `
       updatedAt
       imageUrls
       hashtags
-    }
-  }
-`;
-
-export const CREATE_CHAT_SESSION = `
-  mutation CreateChatSession($productId: ID!, $buyerId: ID!, $sellerId: ID!) {
-    createChatSession(productId: $productId, buyerId: $buyerId, sellerId: $sellerId) {
-      id
-      productId
-      buyerId
-      sellerId
     }
   }
 `;
@@ -130,12 +119,22 @@ export const UPDATE_PRODUCT = `
     }
   }
 `;
+export const CREATE_CHAT_SESSION = `
+  mutation CreateChatSession($productId: ID!, $buyerId: ID!, $sellerId: ID!) {
+    createChatSession(productId: $productId, buyerId: $buyerId, sellerId: $sellerId) {
+      id
+      productId
+      buyerId
+      sellerId
+    }
+  }
+`;
 
 export const CREATE_OTP = `
   mutation CreateOtp($email: String!) {
     createOtp(email: $email) {
       success
-      message
+      message 
     }
   }
 `;

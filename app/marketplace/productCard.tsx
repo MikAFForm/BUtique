@@ -24,6 +24,7 @@ export default function ProductCard({ product, onInterest, onOpen }: Props) {
   const [liked, setLiked] = useState(product.isUserInterested);
   const productImage = product.imageUrls?.[0]
   const router = useRouter();
+  const profile = getSessionProfile();
 
   useEffect(() => {
     setLiked(product.isUserInterested);
@@ -46,10 +47,14 @@ export default function ProductCard({ product, onInterest, onOpen }: Props) {
         type="button"
         onClick={(e) => {
           e.stopPropagation();
+          if (profile?.id && product.sellerId === profile.id) {
+            alert("You cannot toggle interest on your own product.");
+            return;
+          }
           setLiked((prev) => !prev); 
           onInterest(product.id);  
         }}
-        className="absolute top-3 right-3 z-100 text-3xl cursor-pointer hover:scale-110 "
+        className="absolute top-3 right-3 z-100 text-3xl cursor-pointer hover:scale-110"
       >
         {liked ? (
           <AiFillHeart className="text-[#71808b]" />

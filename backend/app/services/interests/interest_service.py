@@ -1,4 +1,5 @@
 from ...db import supabase
+from ...utils.datetime import parse_datetime
 
 
 def is_user_interested(user_id: str, product_id: str) -> bool:
@@ -43,6 +44,18 @@ def remove_interest(user_id: str, product_id: str) -> dict:
 
 
 def toggle_interest(user_id: str, product_id: str) -> dict:
+    # Prevent a user from toggling interest on their own product
+    seller_resp = (
+        supabase.table("products")
+        .select("seller_id")
+        .eq("id", product_id)
+        .maybe_single()
+        .execute()
+    )
+    seller_data = getattr(seller_resp, "data", None) or {}
+    if seller_data.get("seller_id") == user_id:
+        return {"message": "cannot_toggle_own_product", "liked": None}
+
     if is_user_interested(user_id, product_id):
         return remove_interest(user_id, product_id)
     return add_interest(user_id, product_id)
@@ -81,4 +94,13 @@ def get_interested_products(user_id: str):
 
     rows = resp.data or []
 
-    return [row["products"] for row in rows]
+    products = []
+    for row in rows:
+        product = row.get("products") or {}
+        if "created_at" in product:
+            product["created_at"] = parse_datetime(product["created_at"])
+        if "updated_at" in product:
+            product["updated_at"] = parse_datetime(product["updated_at"])
+        products.append(product)
+
+    return products

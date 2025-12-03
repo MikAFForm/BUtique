@@ -11,6 +11,7 @@ import { SlCalender } from "react-icons/sl";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { useEffect, useRef, useState } from "react";
 import { AllProduct } from "../services/Productposts/AllproductPosts";
+import { getSessionProfile } from "../services/session";
 
 function formatPostedAgo(createdAt?: string | null) {
   if (!createdAt) return "Recently";
@@ -31,6 +32,7 @@ export default function ProductDetailModal({
 }) {
   const [current, setCurrent] = useState(0);
   const [liked, setLiked] = useState(product.isUserInterested ?? false);
+   const profile = getSessionProfile();
 
   const touchStartX = useRef<number | null>(null);
 
@@ -78,6 +80,10 @@ export default function ProductDetailModal({
           <button
             onClick={(e) => {
               e.stopPropagation(); // prevent closing modal
+              if (profile?.id && product.sellerId === profile.id) {
+                alert("You cannot toggle interest on your own product.");
+                return;
+              }
               setLiked((prev) => !prev);
               onInterest(product.id);
             }}

@@ -108,6 +108,19 @@ class AllProduct:
     interested_buyers: List[BuyerInfo] = strawberry.field(default_factory=list)
 
 
+def _normalize_product_row(row: dict) -> dict:
+    """Normalize product row to expected AllProduct shape."""
+    normalized = dict(row)
+    buyers = normalized.get("interested_buyers") or []
+    normalized["interested_buyers"] = [
+        BuyerInfo(user_id=buyer.get("user_id"), name=buyer.get("name"))
+        for buyer in buyers
+        if buyer.get("user_id") is not None
+    ]
+    if "interested_count" not in normalized:
+        normalized["interested_count"] = len(normalized["interested_buyers"])
+    return normalized
+
 
 @strawberry.input
 class ProductInput:
@@ -203,7 +216,7 @@ class Query:
         info: Info
     ) -> List[AllProduct]:
         rows = resolve_products(info) 
-        return [AllProduct(**row) for row in rows]
+        return [AllProduct(**_normalize_product_row(row)) for row in rows]
     
     @strawberry.field
     def products(
@@ -218,7 +231,7 @@ class Query:
     @strawberry.field
     def productsByIds(self, info: Info, ids: List[strawberry.ID]) -> List[AllProduct]:
         rows = resolve_products_by_ids([str(i) for i in ids])
-        return [AllProduct(**row) for row in rows]
+        return [AllProduct(**_normalize_product_row(row)) for row in rows]
 
     @strawberry.field
     def chatSessions(
@@ -265,12 +278,12 @@ class Query:
     @strawberry.field
     def interestedProducts(self, info: Info, user_id: strawberry.ID) -> List[AllProduct]:
         rows = resolve_interested_products(info, str(user_id))
-        return [AllProduct(**row) for row in rows]
+        return [AllProduct(**_normalize_product_row(row)) for row in rows]
     
     @strawberry.field
     def sellerProductDetails(self, info: Info, product_id: strawberry.ID) -> Optional[AllProduct]:
         row = resolve_seller_product_detail(info, str(product_id))
-        return AllProduct(**row) if row else None
+        return AllProduct(**_normalize_product_row(row)) if row else None
 
 # --------------------------------MUTATION---------------------------------------------
 
@@ -365,4 +378,4 @@ class Mutation:
     @strawberry.mutation
     def updateProduct(self, info: Info, product_id: strawberry.ID, data: ProductInput) -> Optional[AllProduct]:
         updated = resolve_update_product(info, str(product_id), data.__dict__)
-        return AllProduct(**updated) if updated else None
+        return AllProduct(**_normalize_product_row(updated)) if updated else None

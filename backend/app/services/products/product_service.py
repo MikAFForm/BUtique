@@ -1,7 +1,10 @@
 from ...db import supabase
 from ...utils.datetime import parse_datetime
 from ...utils.uploadImage import upload_base64_image
-from ...services.interests.interest_service import is_user_interested
+from ...services.interests.interest_service import (
+    is_user_interested,
+    get_interested_buyers,
+)
 
 class ProductDTO:
     def __init__(self, **kwargs):
@@ -48,6 +51,10 @@ def execute_get_all_products(info):
 
         if not row.get("seller_name") and row.get("seller_id"):
             row["seller_name"] = get_seller_name(row["seller_id"])
+
+        interest = get_interested_buyers(row["id"])
+        row["interested_count"] = interest["count"]
+        row["interested_buyers"] = interest["buyers"]
 
         row["is_user_interested"] = (
             is_user_interested(user_id, row["id"]) if user_id else False

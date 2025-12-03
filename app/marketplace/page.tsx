@@ -59,6 +59,12 @@ export default function MarketplacePage() {
         return;
       }
 
+      const product = (searchResults ?? allProducts).find((p) => p.id === productId);
+      if (product && product.sellerId === profile.id) {
+        alert("You cannot toggle interest on your own product.");
+        return;
+      }
+
       await toggleInterest(profile.id, productId);
       const refreshed = await loadProducts();
 
@@ -70,6 +76,10 @@ export default function MarketplacePage() {
       }
 
     } catch (error) {
+      if (error instanceof Error && error.message.includes("own product")) {
+        alert(error.message);
+        return;
+      }
       console.error("Toggle interest failed:", error);
     }
   };

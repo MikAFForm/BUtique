@@ -104,6 +104,9 @@ export const GET_INTERESTED_PRODUCTS = `
       id
       name
       price
+      description
+      location
+      sellerId
       sellerName
       condition
       status

@@ -11,9 +11,14 @@ export async function toggleInterest(
   productId: string
 ): Promise<ToggleInterestResponse> {
   const result = await mutate(TOGGLE_INTEREST, { userId, productId });
-
-  return {
-    message: result.toggleInterest.message,
-    liked: result.toggleInterest.liked,
+  const response = {
+    message: result.toggleInterest.message as string,
+    liked: result.toggleInterest.liked as boolean | null,
   };
+
+  if (response.message === "cannot_toggle_own_product") {
+    throw new Error("You cannot toggle interest on your own product.");
+  }
+
+  return response;
 }

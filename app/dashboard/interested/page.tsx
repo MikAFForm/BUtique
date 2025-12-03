@@ -2,72 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import Sidebar from "../../components/sidebar";
 import { Empty } from "antd";
+import { useInterestedPosts } from "@/app/services/interestedPosts";
 
 export default function PostsPage() {
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      title: "Mini Fridge",
-      condition: "Good",
-      category: "Furniture",
-      status: "Active",
-      price: 80,
-      likes: 2,
-      image:
-        "/bike.jpeg",
-      createdAt: "Nov 20, 2025",
-      description:
-        "Compact mini fridge, works perfectly. Great for dorm rooms or apartments. Energy efficient...",
-    },
-    {
-      id: 2,
-      title: "Bike",
-      condition: "Good",
-      category: "Furniture",
-      status: "Sold",
-      price: 20,
-      likes: 2,
-      image:
-        "/bike.jpeg",
-      createdAt: "Oct 20, 2025",
-      description:
-        "Compact mini fridge, works perfectly. Great for dorm rooms or apartments. Energy efficient...",
-    },
-
-     {
-      id: 3,
-      title: "Calculus II Textbook",
-      condition: "Good",
-      category: "Textbook",
-      status: "on Hold",
-      price: 80,
-      likes: 0,
-      image:
-        "/bike.jpeg",
-      createdAt: "Oct 25, 2025",
-      description:
-        "Compact mini fridge, works perfectly. Great for dorm rooms or apartments. Energy efficient...",
-    },
-    ]);
-    const sortedPosts = [...posts].sort(
-     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-
-  const getStatusStyle = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "active":
-        return "bg-[#00C853] text-white";     
-      case "on hold":
-        return "bg-[#FFC107] text-white";     
-      case "sold":
-        return "bg-[#9E9E9E] text-white";     
-      default:
-        return "bg-gray-400 text-white";
-    }
-  };
+  const { posts, loading, userId, getStatusStyle, cancelInterest } = useInterestedPosts();
 
   return (
     <>
@@ -82,7 +22,18 @@ export default function PostsPage() {
           </Link>
         </div>
 
-        {sortedPosts.length === 0 ? (
+        {loading ? (
+          <div className="text-gray-500 text-center mt-20">Loading your interested posts...</div>
+        ) : !userId ? (
+          <div className="flex flex-col items-center justify-center mt-20 text-center">
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <span className="text-lg">Please log in to view interested posts.</span>
+              }
+            />
+          </div>
+        ) : posts.length === 0 ? (
           <div className="flex flex-col items-center justify-center mt-20 text-center">
             <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -100,15 +51,15 @@ export default function PostsPage() {
         ) : (
           <div className="flex flex-col gap-8">
             
-          {sortedPosts.map((post) => (
+          {posts.map((post) => (
               <div
                 key={post.id}
                 className="w-full border rounded-xl shadow-sm bg-white p-5 flex gap-6"
               >
                 <div className="w-[260px] h-[150px] relative rounded-lg overflow-hidden">
                   <Image
-                    src={post.image}
-                    alt={post.title}
+                    src={post.imageUrls?.[0] ?? "/bike.jpeg"}
+                    alt={post.name}
                     fill
                     className="object-cover"
                   />
@@ -122,7 +73,7 @@ export default function PostsPage() {
               <div className="flex flex-col flex-1 justify-between">
 
                 <div className="flex items-center gap-7">
-                  <p className="font-semibold text-xl">{post.title}</p>
+                  <p className="font-semibold text-xl">{post.name}</p>
 
                   <span className="px-3 py-1 text-sm bg-gray-200 rounded-md">
                     {post.condition}
@@ -151,10 +102,17 @@ export default function PostsPage() {
                       <p className="text-xl font-semibold">${post.price.toFixed(2)}</p>
                     </div>
 
-                    <p className="text-xs text-gray-500 mt-3">
-                      Posted At: {post.createdAt}
-                    </p>
-                  </div>
+                  <p className="text-xs text-gray-500 mt-3">
+                    Posted At:{" "}
+                    {post.createdAt
+                      ? new Date(post.createdAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })
+                      : "Unknown"}
+                  </p>
+                </div>
 
                   {/* Right side (Buttons) */}
                   <div className="flex items-center gap-3">
@@ -167,7 +125,13 @@ export default function PostsPage() {
                     >
                       Contact Seller
                     </button>
-                    <button className="px-5 py-2 rounded-md bg-[#FF3B30] text-white hover:bg-[#e03129] transition">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        cancelInterest(post.id);
+                      }}
+                      className="px-5 py-2 rounded-md bg-[#FF3B30] text-white hover:bg-[#e03129] transition"
+                    >
                       Cancel Interested
                     </button>
                   </div>
