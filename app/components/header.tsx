@@ -9,6 +9,8 @@ import { MdPostAdd } from "react-icons/md";
 import { Barrio } from "next/font/google";
 import { runProductSearch, fetchProductsByIds } from "../services/search";
 import type { AllProduct } from "../services/Productposts/AllproductPosts";
+import { useRouter } from "next/navigation";
+
 
 const barrio = Barrio({
   weight: "400",
@@ -20,7 +22,7 @@ type HeaderProps = {
 };
 
 export default function Header({ onSearchResults }: HeaderProps) {
-  const user = { image: "/sampleUser.png" }; // Placeholder for user image logic
+  const router = useRouter();
   const [keyword, setKeyword] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
@@ -42,8 +44,17 @@ export default function Header({ onSearchResults }: HeaderProps) {
 
       <div className="flex items-center gap-6 pt-1">
         <Link href="/marketplace">
-          <div className="flex items-center gap-1 cursor-pointer">
-            <Image src="/icon.png" width={50} height={50} alt="BUtique" />
+          <div className="flex items-center gap-1 cursor-pointer"
+                onClick={() => router.refresh()} >
+            <Image
+                src="/icon.png"
+                width={60}
+                height={60}
+                alt="BUtique"
+                className="object-contain"
+                priority
+                unoptimized
+              />
             <span className={`${barrio.className} mt-3 text-5xl text-[#00013d]`}>
               BUtique
             </span>
@@ -78,13 +89,6 @@ export default function Header({ onSearchResults }: HeaderProps) {
         >
           Create A Post
         </Link>
-
-        {/* <Link
-          href="/wish"
-          className="px-4 py-2 rounded-lg bg-[#71808b] text-white font-medium hover:bg-[#5f6c75]"
-        >
-          Wish An Item
-        </Link> */}
         </div>
 
         {/* Icons */}
@@ -106,13 +110,7 @@ export default function Header({ onSearchResults }: HeaderProps) {
         </Link>
 
         <Link href="/dashboard/posts" className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
-          <Image
-            src={user.image}
-            alt="profile"
-            width={56}
-            height={56}
-            className="object-cover"
-          />
+          <AiOutlineUser className="text-2xl text-[#71808b] hover:text-gray-700" />
           </Link>
         </div>
       </div>

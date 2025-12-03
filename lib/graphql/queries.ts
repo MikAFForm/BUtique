@@ -18,24 +18,31 @@ export const SEARCH_PRODUCTS = `
 `;
 
 export const GET_ALL_PRODUCTS = `
-  query GetAllProducts {
-    allProducts {
-      id
+ query GetAllProducts {
+  allProducts {
+    id
+    name
+    price
+    condition
+    status
+    category
+    description
+    location
+    sellerId
+    sellerName
+    createdAt
+    updatedAt
+    imageUrls
+    hashtags
+    isUserInterested
+    interestedCount
+    interestedBuyers {
+      userId
       name
-      price
-      condition
-      status
-      category
-      description
-      location
-      sellerId
-      sellerName
-      createdAt
-      updatedAt
-      imageUrls
-      hashtags
     }
   }
+}
+
 `;
 
 export const PRODUCTS_BY_IDS = `
@@ -82,6 +89,66 @@ export const GET_MESSAGES = `
       senderId
       body
       createdAt
+    }
+  }
+`;
+
+export const IS_USER_INTERESTED = `
+  query IsUserInterested($userId: ID!, $productId: ID!) {
+    isUserInterested(userId: $userId, productId: $productId)
+  }
+`;
+
+export const GET_INTERESTED_PRODUCTS = `
+  query InterestedProducts($userId: ID!) {
+    interestedProducts(userId: $userId) {
+      id
+      name
+      price
+      sellerName
+      condition
+      status
+      category
+      imageUrls
+      interestedCount
+      createdAt
+    }
+  }
+`;
+
+export const GET_INTERESTED_BUYERS = `
+  query ProductInterest($productId: ID!) {
+    productsByIds(ids: [$productId]) {
+      id
+      name
+      interestedCount
+      interestedBuyers {
+        userId
+        name
+      }
+    }
+  }
+`;
+
+export const SELLER_PRODUCT_DETAIL = `
+  query SellerProductDetail($productId: ID!) {
+    sellerProductDetail(productId: $productId) {
+      id
+      name
+      price
+      description
+      location
+      sellerId
+      sellerName
+      createdAt
+      updatedAt
+      imageUrls
+      hashtags
+      interestedCount
+      interestedBuyers {
+        userId
+        name
+      }
     }
   }
 `;

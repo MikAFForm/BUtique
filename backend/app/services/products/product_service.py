@@ -1,7 +1,7 @@
 from ...db import supabase
 from ...utils.datetime import parse_datetime
 from ...utils.uploadImage import upload_base64_image
-
+from ...services.interests.interest_service import is_user_interested
 
 class ProductDTO:
     def __init__(self, **kwargs):
@@ -24,8 +24,10 @@ def get_seller_name(seller_id: str) -> str | None:
     data = getattr(resp, "data", None)
     return data["name"] if data else None
 
+def execute_get_all_products(info):
 
-def execute_get_all_products():
+    user_id = info.context.get("user_id")
+
     resp = (
         supabase
         .table("products")
@@ -38,6 +40,7 @@ def execute_get_all_products():
         raise RuntimeError(resp.error)
 
     rows = resp.data or []
+    enriched = []
 
     for row in rows:
         row["created_at"] = parse_datetime(row.get("created_at"))
@@ -46,8 +49,13 @@ def execute_get_all_products():
         if not row.get("seller_name") and row.get("seller_id"):
             row["seller_name"] = get_seller_name(row["seller_id"])
 
-    return rows
+        row["is_user_interested"] = (
+            is_user_interested(user_id, row["id"]) if user_id else False
+        )
 
+        enriched.append(row)
+
+    return enriched
 
 def execute_create_product(data: dict):
     safe_data = dict(data)
