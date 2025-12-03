@@ -10,42 +10,60 @@ export interface CreateProductPayload {
   status: string;
   description?: string;
   location?: string;
-  file: File;
+  files: File[];
+  hashtags: string[];
 }
 
-// Convert image file to base64
+// Convert File
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.readAsDataURL(file);
 
     reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.onerror = () => reject("Failed to convert file to base64");
+
+    reader.readAsDataURL(file);
   });
 }
 
-export async function createProductPost(data: CreateProductPayload) {
+// Convert multiple files 
+async function convertFilesToBase64(files: File[]): Promise<string[]> {
+  return Promise.all(
+    files.map((file, index) => {
+      if (!(file instanceof File)) {
+        console.error(`❌ File at index ${index} is NOT a File:`, file);
+        throw new Error(
+          `Invalid file at index ${index}. Expected a File object.`
+        );
+      }
+      return fileToBase64(file);
+    })
+  );
+}
+
+export async function createProductPost(payload: CreateProductPayload) {
   try {
-    const base64Image = await fileToBase64(data.file);
+    // Convert multiple images into base64 strings
+    const base64Images = await convertFilesToBase64(payload.files);
 
     const result = await mutate(CREATE_PRODUCT, {
       data: {
-        sellerId: data.sellerId,
-        name: data.name,
-        price: data.price,
-        condition: data.condition,
-        status: data.status,
-        category: data.category,
-        description: data.description ?? null,
-        location: data.location ?? null,
-        imageUrls: [base64Image],
-        hashtags: [],
+        sellerId: payload.sellerId,
+        name: payload.name,
+        price: payload.price,
+        condition: payload.condition,
+        status: payload.status,
+        category: payload.category,
+        description: payload.description ?? null,
+        location: payload.location ?? null,
+        imageUrls: base64Images,
+        hashtags: payload.hashtags,
       },
     });
 
     return result.createProduct;
   } catch (error: any) {
-    console.error("Create product failed:", error);
+    console.error("❌ Create product failed:", error);
     throw new Error(error?.message || "Failed to create product");
   }
 }

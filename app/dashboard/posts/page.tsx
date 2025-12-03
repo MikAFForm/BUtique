@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import Link from "next/link";
 import { Heart } from "lucide-react";
 import Sidebar from "../../components/sidebar";
 import { Empty } from "antd";
 import PostEditModal from "./postEditModal";
+import { usePostsDashboard } from "@/app/services/hooks/useDashboardPosts";
 
 function ConfirmDeleteModal({ open, onCancel, onConfirm }) {
   if (!open) return null;
@@ -40,89 +41,22 @@ function ConfirmDeleteModal({ open, onCancel, onConfirm }) {
 
 
 export default function PostsPage() {
-  const [selectedPost, setSelectedPost] = useState(null);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [postToDelete, setPostToDelete] = useState(null);
-  const [posts, setPosts] = useState([
-    {
-      id: 1,
-      title: "Mini Fridge",
-      condition: "Good",
-      category: "Furniture",
-      status: "Active",
-      price: 80,
-      likes: 2,
-      image:
-        "/bike.jpeg",
-      createdAt: "Nov 20, 2025",
-      description:
-        "Compact mini fridge, works perfectly. Great for dorm rooms or apartments. Energy efficient...",
-    },
-    {
-      id: 2,
-      title: "Bike",
-      condition: "Good",
-      category: "Furniture",
-      status: "Sold",
-      price: 20,
-      likes: 2,
-      image:
-        "/bike.jpeg",
-      createdAt: "Oct 20, 2025",
-      description:
-        "Compact mini fridge, works perfectly. Great for dorm rooms or apartments. Energy efficient...",
-    },
-     {
-      id: 3,
-      title: "textbook",
-      condition: "Good",
-      category: "textbook",
-      status: "on Hold",
-      price: 80,
-      likes: 0,
-      image:
-        "/bike.jpeg",
-      createdAt: "Oct 25, 2025",
-      description:
-        "Compact mini fridge, works perfectly. Great for dorm rooms or apartments. Energy efficient...",
-    },
-    
-  ]);
-
-  const getStatusStyle = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "active":
-        return "bg-[#00C853] text-white";     
-      case "on hold":
-        return "bg-[#FFC107] text-white";     
-      case "sold":
-        return "bg-[#9E9E9E] text-white";     
-      default:
-        return "bg-gray-400 text-white";
-    }
-  };
-  const sortedPosts = [...posts].sort(
-  (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-  
-
-  const openEdit = (post) => {
-    setSelectedPost(post);
-    setIsEditOpen(true);
-  };
-
-  const openDeleteConfirm = (post) => {
-  setPostToDelete(post);
-  setDeleteModalOpen(true);
-  };
-
-  const confirmDelete = () => {
-    setPosts((prev) => prev.filter((p) => p.id !== postToDelete.id));
-    setDeleteModalOpen(false);
-    setPostToDelete(null);
-  };
-
+  const {
+    loading,
+    userId,
+    selectedPost,
+    isEditOpen,
+    deleteModalOpen,
+    sortedPosts,
+    openEdit,
+    closeEdit,
+    openDeleteConfirm,
+    closeDeleteConfirm,
+    confirmDelete,
+    formatDate,
+    getStatusLabel,
+    getStatusStyle,
+  } = usePostsDashboard();
 
 
   return (
@@ -131,18 +65,35 @@ export default function PostsPage() {
       <div className="pl-72 w-full p-10">
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-4xl font-semibold mb-6">My Posts</h1>
-          <button className="px-5 py-2 bg-[#71808b] text-white rounded-lg shadow hover:bg-[#5a6874] transition">
-              Create A Post
-          </button>
+          <Link
+            href="/post"
+            className="px-5 py-2 bg-[#71808b] text-white rounded-lg shadow hover:bg-[#5a6874] transition"
+          >
+            Create A Post
+          </Link>
         </div>
 
         <PostEditModal
-        open={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
-        post={selectedPost}
-       />
+          key={selectedPost?.id ?? "empty"}
+          open={isEditOpen}
+          onClose={closeEdit}
+          post={selectedPost}
+        />
 
-        {sortedPosts.length === 0 ? (
+        {loading ? (
+          <div className="text-gray-500 text-center mt-16">Loading your posts...</div>
+        ) : !userId ? (
+          <div className="flex flex-col items-center justify-center mt-20 text-center">
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <span className="text-lg">
+                  Please log in to view your posts.
+                </span>
+              }
+            />
+          </div>
+        ) : sortedPosts.length === 0 ? (
           <div className="flex flex-col items-center justify-center mt-20 text-center">
             <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -166,8 +117,8 @@ export default function PostsPage() {
             >
               <div className="w-[260px] h-[150px] relative rounded-lg overflow-hidden">
                 <Image
-                  src={post.image}
-                  alt={post.title}
+                  src={post.imageUrls?.[0] ?? "/bike.jpeg"}
+                  alt={post.name}
                   fill
                   className="object-cover"
                 />
@@ -177,14 +128,14 @@ export default function PostsPage() {
             <div className="flex flex-col flex-1 justify-between">
 
               <div className="flex items-center gap-7">
-                <p className="font-semibold text-xl">{post.title}</p>
+                <p className="font-semibold text-xl">{post.name}</p>
 
                 <span className="px-3 py-1 text-sm bg-gray-200 rounded-md">
-                  {post.condition}
+                  {post.condition || "Unknown"}
                 </span>
 
                 <span className="px-3 py-1 text-sm border rounded-md">
-                  {post.category}
+                  {post.category || "Uncategorized"}
                 </span>
 
                 <span
@@ -192,12 +143,12 @@ export default function PostsPage() {
                     post.status ? getStatusStyle(post.status) : "bg-gray-400 text-white"
                       }`}
                 >
-                  {post.status}
+                  {getStatusLabel(post.status)}
                 </span>
               </div>
 
               <p className="text-gray-600 text-sm my-2 max-w-3xl">
-                {post.description}
+                {post.description || "No description provided."}
               </p>
 
               <div className="flex items-center justify-between mt-4">
@@ -207,18 +158,18 @@ export default function PostsPage() {
 
                     <div className="flex items-center gap-1">
                       <Heart size={20} className="text-gray-400" />
-                      <span className="text-gray-600">{post.likes}</span>
+                      <span className="text-gray-600">{post.interestedCount ?? 0}</span>
                     </div>
                   </div>
 
                   <p className="text-xs text-gray-500 mt-3">
-                    Created At: {post.createdAt}
+                    Created At: {formatDate(post.createdAt)}
                   </p>
                 </div>
 
                 <ConfirmDeleteModal
                   open={deleteModalOpen}
-                  onCancel={() => setDeleteModalOpen(false)}
+                  onCancel={closeDeleteConfirm}
                   onConfirm={confirmDelete}
                 />
                 

@@ -14,8 +14,22 @@ from .resolvers.chats.resolver import (
 from .resolvers.authentication.resolver import resolve_login_user
 from .resolvers.products.resolver import resolve_create_product, resolve_products
 from .resolvers.search_filter.resolver import resolve_products_by_ids
+from .resolvers.interests.resolver import (
+    resolve_add_interest,
+    resolve_remove_interest,
+    resolve_is_user_interested,
+    resolve_interested_buyers,
+    resolve_interested_products,
+    resolve_toggle_interest,
+)
+from .resolvers.seller.resolver import (
+    resolve_seller_product_detail,
+    resolve_delete_product,
+    resolve_update_product,
+)
 from .resolvers.authentication.resolver import resolve_create_otp
 from .resolvers.authentication.resolver import resolve_auth_otp
+
 from enum import Enum
 
 
@@ -31,7 +45,6 @@ class User:
 class OTP:
     success: bool
     message: str
-
 
 def _unwrap(response):
     data = getattr(response, "data", None)
@@ -62,6 +75,11 @@ class ProductCategory(Enum):
     Others = "Others"
 
 @strawberry.type
+class BuyerInfo:
+    user_id: strawberry.ID
+    name: str
+
+@strawberry.type
 class AllProduct:
     id: strawberry.ID
     name: str
@@ -83,6 +101,25 @@ class AllProduct:
     image_urls: List[str] = strawberry.field(default_factory=list)
     hashtags: List[str] = strawberry.field(default_factory=list)
 
+    is_user_interested: bool = strawberry.field(
+        default=False, name="isUserInterested"
+    )
+    interested_count: int = 0
+    interested_buyers: List[BuyerInfo] = strawberry.field(default_factory=list)
+
+
+def _normalize_product_row(row: dict) -> dict:
+    """Normalize product row to expected AllProduct shape."""
+    normalized = dict(row)
+    buyers = normalized.get("interested_buyers") or []
+    normalized["interested_buyers"] = [
+        BuyerInfo(user_id=buyer.get("user_id"), name=buyer.get("name"))
+        for buyer in buyers
+        if buyer.get("user_id") is not None
+    ]
+    if "interested_count" not in normalized:
+        normalized["interested_count"] = len(normalized["interested_buyers"])
+    return normalized
 
 
 @strawberry.input
@@ -139,6 +176,19 @@ class Message:
     body: str
     created_at: datetime
 
+
+@strawberry.type
+class InterestResult:
+    message: str
+    liked: bool | None = None
+
+@strawberry.type
+class InterestedBuyersResult:
+    count: int
+    buyers: List[BuyerInfo]
+
+
+
 @strawberry.type
 class Query:
     @strawberry.field
@@ -159,11 +209,14 @@ class Query:
         if not data:
             return None
         return User(**data)
-
+    
     @strawberry.field
-    def allProducts(self, info) -> List[AllProduct]:
-        rows = resolve_products(info)
-        return [AllProduct(**row) for row in rows]
+    def allProducts(
+        self,
+        info: Info
+    ) -> List[AllProduct]:
+        rows = resolve_products(info) 
+        return [AllProduct(**_normalize_product_row(row)) for row in rows]
     
     @strawberry.field
     def products(
@@ -178,7 +231,7 @@ class Query:
     @strawberry.field
     def productsByIds(self, info: Info, ids: List[strawberry.ID]) -> List[AllProduct]:
         rows = resolve_products_by_ids([str(i) for i in ids])
-        return [AllProduct(**row) for row in rows]
+        return [AllProduct(**_normalize_product_row(row)) for row in rows]
 
     @strawberry.field
     def chatSessions(
@@ -199,6 +252,38 @@ class Query:
     def messages(self, info: Info, session_id: strawberry.ID) -> List[Message]:
         rows = resolve_messages_by_session(str(session_id))
         return [Message(**row) for row in rows]
+    
+    # Check interest
+    @strawberry.field
+    def isUserInterested(self, info: Info, user_id: strawberry.ID, product_id: strawberry.ID) -> bool:
+        return resolve_is_user_interested(info, str(user_id), str(product_id))
+    
+    #get all buyers interested in a product
+    @strawberry.field
+    def interestedBuyers(
+        self,
+        info: Info,
+        product_id: strawberry.ID
+    ) -> InterestedBuyersResult:
+        result = resolve_interested_buyers(info, str(product_id))
+        return InterestedBuyersResult(
+            count=result["count"],
+            buyers=[
+                BuyerInfo(user_id=buyer["user_id"], name=buyer["name"])
+                for buyer in result["buyers"]
+            ]
+        )
+
+    # get all products a user is interested in
+    @strawberry.field
+    def interestedProducts(self, info: Info, user_id: strawberry.ID) -> List[AllProduct]:
+        rows = resolve_interested_products(info, str(user_id))
+        return [AllProduct(**_normalize_product_row(row)) for row in rows]
+    
+    @strawberry.field
+    def sellerProductDetails(self, info: Info, product_id: strawberry.ID) -> Optional[AllProduct]:
+        row = resolve_seller_product_detail(info, str(product_id))
+        return AllProduct(**_normalize_product_row(row)) if row else None
 
 # --------------------------------MUTATION---------------------------------------------
 
@@ -209,15 +294,12 @@ class Mutation:
         response = resolve_create_otp(email)
         return OTP(
             success=response["success"],
-            message=response["message"]
+            message=response["message"],
         )
-        
-    #Not done yet
+
     @strawberry.mutation
     def authOtp(self, email: str, otp: int) -> bool:
-        response = resolve_auth_otp(email, otp)
-        return response
-        
+        return resolve_auth_otp(email, otp)
 
     @strawberry.mutation
     def create_user(self, name: str, email: str, password: str) -> User:
@@ -266,3 +348,34 @@ class Mutation:
             body=body,
         )
         return Message(**row)
+    
+    @strawberry.mutation
+    def addInterest(self, info: Info, user_id: strawberry.ID, product_id: strawberry.ID) -> InterestResult:
+        result = resolve_add_interest(info, str(user_id), str(product_id))
+        return InterestResult(
+            message=result["message"],
+            liked=result["liked"],
+        )
+
+    @strawberry.mutation
+    def removeInterest(self, info: Info, user_id: strawberry.ID, product_id: strawberry.ID) -> InterestResult:
+        result = resolve_remove_interest(info, str(user_id), str(product_id))
+        return InterestResult(
+            message=result["message"],
+            liked=result["liked"],
+        )
+    
+    @strawberry.mutation
+    def toggleInterest(self, info: Info, user_id: strawberry.ID, product_id: strawberry.ID) -> InterestResult:
+        result = resolve_toggle_interest(info, str(user_id), str(product_id))
+        return InterestResult(message=result["message"], liked=result["liked"])
+
+
+    @strawberry.mutation
+    def deleteProduct(self, info: Info, product_id: strawberry.ID) -> bool:
+        return resolve_delete_product(info, str(product_id))
+
+    @strawberry.mutation
+    def updateProduct(self, info: Info, product_id: strawberry.ID, data: ProductInput) -> Optional[AllProduct]:
+        updated = resolve_update_product(info, str(product_id), data.__dict__)
+        return AllProduct(**_normalize_product_row(updated)) if updated else None

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Image from "next/image";
 import { Barrio } from "next/font/google";
 import { useRouter } from "next/navigation";
 import { createProductPost } from "../services/Productposts/createProductPosts";
@@ -12,47 +13,80 @@ const barrio = Barrio({
 });
 
 export default function PostPage() {
-  const [loading, setLoading] = useState(false);
-  const [fileLabel, setFileLabel] = useState("No file chosen");
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState<File[]>([]);
+  const [hashtags, setHashtags] = useState<string[]>([]);
+  const [hashtagInput, setHashtagInput] = useState("");
 
+const handleImages = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList) return;
+
+    const selectedFiles = Array.from(fileList).filter(
+      (f): f is File => f instanceof File
+    );
+
+    if (images.length + selectedFiles.length > 5) {
+      alert("You may upload up to 5 images.");
+      return;
+    }
+
+    setImages((prev) => [...prev, ...selectedFiles]);
+  };
+
+  // Add hashtag when pressing Enter
+  const handleAddHashtag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const tag = hashtagInput.trim();
+
+      if (tag && !hashtags.includes(tag)) {
+        setHashtags((prev) => [...prev, tag]);
+      }
+
+      setHashtagInput("");
+    }
+  };
+
+  // Form submit
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     const profile = getSessionProfile();
     if (!profile.id) {
-      alert("You must be logged in to create a post.");
+      alert("You must be logged in.");
+      setLoading(false);
+      return;
+    }
+    if (images.length === 0) {
+      alert("Please upload at least one image.");
       setLoading(false);
       return;
     }
 
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const priceStr = (formData.get("price") as string) || "";
-    const price = Number(priceStr);
-    if (Number.isNaN(price)) {
-      alert("Please enter a valid price.");
-      setLoading(false);
-      return;
-    }
+    const form = new FormData(e.currentTarget);
 
     try {
       await createProductPost({
         sellerId: profile.id,
-        name: formData.get("name") as string,
-        category: formData.get("category") as string,
-        price,
-        condition: formData.get("condition") as string,
+        name: form.get("name") as string,
+        category: form.get("category") as string,
+        price: Number(form.get("price")),
+        condition: form.get("condition") as string,
         status: "Available",
-        description: formData.get("description") as string,
-        file: formData.get("fileToUpload") as File,
+        description: form.get("description") as string,
+        location: form.get("location") as string,
+        files: images,
+        hashtags,
       });
 
-      alert("Post created successfully!");
+      alert("Post created!");
       router.push("/marketplace");
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       alert("Failed to create post.");
     } finally {
       setLoading(false);
@@ -69,6 +103,7 @@ export default function PostPage() {
       </h1>
 
       <form
+        ref={formRef}
         onSubmit={handleSubmit}
         className="w-full max-w-2xl bg-white shadow-md border border-gray-200 rounded-2xl p-8 space-y-6"
       >
@@ -119,39 +154,94 @@ export default function PostPage() {
             className={`${inputClass} resize-none`}
           />
         </div>
-
         <div className="space-y-2">
-          <label className="font-semibold">Image</label>
-          <div className="flex items-center gap-3">
-            <label
-              htmlFor="fileToUpload"
-              className="cursor-pointer px-4 py-2 bg-gray-200 text-gray-800 rounded-lg border border-gray-300 hover:bg-gray-300"
-            >
-              Choose File
-            </label>
-            <span className="text-sm text-gray-600">{fileLabel}</span>
-          </div>
+          <label className="font-semibold">Meet-up Location (optional)</label>
           <input
-            id="fileToUpload"
-            type="file"
-            name="fileToUpload"
-            accept="image/*"
-            required
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              setFileLabel(file ? file.name : "No file chosen");
-            }}
+            name="location"
+            placeholder="Suggested: GSU, Mugar Library, Warren Towers, Questrom, StuVi, COM Lawn..."
+            className={inputClass}
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
-        >
-          {loading ? "Posting..." : "Post Item"}
-        </button>
+
+        <div>
+          <label className="font-semibold">Hashtags</label>
+          <input
+            value={hashtagInput}
+            onChange={(e) => setHashtagInput(e.target.value)}
+            onKeyDown={handleAddHashtag}
+            placeholder="Press Enter to add hashtag"
+            className={inputClass}
+          />
+
+          <div className="flex flex-wrap gap-2 mt-2">
+            {hashtags.map((tag, i) => (
+              <div key={i} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full flex items-center gap-2">
+                #{tag}
+                <button
+                  type="button"
+                  onClick={() => setHashtags(hashtags.filter((_, idx) => idx !== i))}
+                  className="text-red-500"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <div>
+          <label className="font-semibold">Images (max 5)</label>
+          <input type="file" accept="image/*" multiple onChange={handleImages} className={inputClass} />
+          <div className="grid grid-cols-3 gap-3 mt-3">
+            {images.map((img, i) => {
+              const previewUrl = URL.createObjectURL(img);
+
+              return (
+                <div key={i} className="relative">
+                  <Image
+                    src={previewUrl}
+                    alt={`Preview image ${i + 1}`}
+                    width={200}
+                    height={200}
+                    className="h-24 w-full object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setImages(images.filter((_, idx) => idx !== i))}
+                    className="absolute top-1 right-1 bg-black/60 text-white text-xs px-2 rounded-full"
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              formRef.current?.reset();
+              setImages([]);
+              setHashtags([]);
+              setHashtagInput("");
+              router.push("/marketplace");
+            }}
+            className="w-full sm:w-1/2 bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-300 transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full sm:w-1/2 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+          >
+            {loading ? "Posting..." : "Post Item"}
+          </button>
+        </div>
       </form>
     </div>
   );

@@ -1,20 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import Header from "../components/header";
 import ProductCard from "./productCard";
 import { Empty } from "antd";
 import ProductDetailModal from "./productDetailModal";
-import { fetchAllProducts, AllProduct } from "../services/Productposts/AllproductPosts";
+import {
+  fetchAllProducts,
+  AllProduct,
+  categories,
+} from "../services/Productposts/AllproductPosts";
+import { getSessionProfile } from "../services/session";
+import { toggleInterest } from "../services/toggleInterest";
 
-const categories = [
-  "All",
-  "Book",
-  "Electronics",
-  "Clothes",
-  "Dorm Supplies",
-  "Others",
-];
+let cachedProducts: AllProduct[] | null = null;
 
 export default function MarketplacePage() {
   const [loading, setLoading] = useState(true);
@@ -23,51 +22,87 @@ export default function MarketplacePage() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedProduct, setSelectedProduct] = useState<AllProduct | null>(null);
 
-  useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        const products = await fetchAllProducts();
-
-        const visibleProducts = products
-          .filter(
-            (p) => p.status === "Available" || p.status === "Hold"
-          )
-          .sort(
-          (a, b) =>
-            new Date(b.createdAt ?? "").getTime() -
-            new Date(a.createdAt ?? "").getTime()
-        );
-
-        setAllProducts(visibleProducts);
-
-      } catch (error) {
-        console.error("Failed to fetch all products:", error);
-      } finally {
-        setLoading(false);
+  const loadProducts = useCallback(async (force = false) => {
+    setLoading(true);
+    try {
+      if (!force && cachedProducts) {
+        setAllProducts(cachedProducts);
+        return cachedProducts;
       }
-    };
-
-    loadProducts();
+      const products = await fetchAllProducts();
+      const visibleProducts = products
+        .filter((p) => p.status === "Available" || p.status === "Hold")
+        .sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          return dateB - dateA;
+        });
+      setAllProducts(visibleProducts);
+      cachedProducts = visibleProducts;
+      return visibleProducts;
+    } catch (error) {
+      console.error("Failed to fetch all products:", error);
+      setAllProducts([]);
+      return [];
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   const handleSearchResults = (results: AllProduct[]) => {
     setSearchResults(results);
     setActiveCategory("All");
   };
 
-  const filteredList =
-    activeCategory === "All"
-      ? allProducts
-      : allProducts.filter((p) => p.category === activeCategory);
+  const handleToggleInterest = async (productId: string) => {
+    const profile = getSessionProfile();
+    if (!profile?.id) {
+      alert("Please log in to save favorites.");
+      return;
+    }
 
-  const displayList = searchResults ?? filteredList;
+    const product = (searchResults ?? allProducts).find((p) => p.id === productId);
+    if (product && product.sellerId === profile.id) {
+      alert("You cannot toggle interest on your own product.");
+      return;
+    }
+
+    try {
+      await toggleInterest(profile.id, productId);
+      const refreshed = await loadProducts(true);
+
+      if (selectedProduct) {
+        const updated = refreshed.find((p) => p.id === selectedProduct.id);
+        if (updated) {
+          setSelectedProduct(updated);
+        }
+      }
+    } catch (error: any) {
+      if (error instanceof Error && error.message.includes("own product")) {
+        alert(error.message);
+        return;
+      }
+      console.error("Toggle interest failed:", error);
+    }
+  };
+
+  const displayList = useMemo(
+    () =>
+      (searchResults ?? allProducts).filter((p) =>
+        activeCategory === "All" ? true : p.category === activeCategory
+      ),
+    [activeCategory, allProducts, searchResults]
+  );
 
   return (
     <>
-      <Header onSearchResults={handleSearchResults} />
+        <Header onSearchResults={handleSearchResults} />
 
-      <div className=" px-6 py-8 max-w-80% mx-auto">
-
+      <div className="px-6 py-8 max-w-80% mx-auto">
         {/* Category Buttons */}
         <div className="flex flex-wrap gap-3 mb-6">
           {categories.map((c) => (
@@ -85,49 +120,55 @@ export default function MarketplacePage() {
           ))}
         </div>
 
-      {loading ? (
-        <div className="text-center py-20 text-gray-500">
-          Loading products...
-        </div>
-         ):
-         displayList.length === 0 ? (
-        <div className="flex justify-center items-center py-20 w-full">
-            <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={
-                <span className="text-lg">
-                Oops! No related products are available right now.
-                </span>
-            }
-            />
-        </div>
-        ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayList.map((product) => (
-            <div key={product.id} onClick={() => setSelectedProduct(product)}>
-                <ProductCard product={product} />
-            </div>
-            ))}
-        </div>
-        )
-      }
-      
-      {/* MODAL */}
-      {selectedProduct && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl w-[95%] max-w-4xl shadow-xl">
-            <button
-              className="ml-auto mb-4 block px-3 py-1 bg-gray-200 rounded"
-              onClick={() => setSelectedProduct(null)}
-            >
-              Close
-            </button>
-
-            <ProductDetailModal product={selectedProduct} />
-
+        {/* Grid */}
+        {loading ? (
+          <div className="text-center py-20 text-gray-500">
+            Loading products...
           </div>
-        </div>
-      )}
+        ) : displayList.length === 0 ? (
+          <div className="flex justify-center items-center py-20 w-full">
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={<span className="text-lg">Oops! No related products.</span>}
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {displayList.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onInterest={handleToggleInterest}
+                onOpen={() => setSelectedProduct(product)}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Modal */}
+        {selectedProduct && (
+          <div
+            className="fixed inset-0 bg-black/40 flex items-center justify-center z-200"
+            onClick={() => setSelectedProduct(null)}
+          >
+            <div
+              className="bg-white p-6 rounded-xl w-[95%] max-w-4xl shadow-xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="ml-auto mb-4 block px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded transition"
+                onClick={() => setSelectedProduct(null)}
+              >
+                Close
+              </button>
+
+              <ProductDetailModal
+                product={selectedProduct}
+                onInterest={handleToggleInterest}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

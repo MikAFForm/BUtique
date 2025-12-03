@@ -5,58 +5,55 @@ import {
   AiOutlineUser,
   AiOutlineHeart,
   AiFillHeart,
-  AiOutlineComment
+  AiOutlineComment,
 } from "react-icons/ai";
 import { SlCalender } from "react-icons/sl";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AllProduct } from "../services/Productposts/AllproductPosts";
+import { getSessionProfile } from "../services/session";
 
-export default function ProductDetailModal({ product }: { product: AllProduct }) {
-  const [liked, setLiked] = useState(false);
+function formatPostedAgo(createdAt?: string | null) {
+  if (!createdAt) return "Recently";
+
+  const postedDate = new Date(createdAt);
+  if (isNaN(postedDate.getTime())) return "Recently";
+
+  const diff = Math.floor((Date.now() - postedDate.getTime()) / (1000 * 3600 * 24));
+  return diff <= 1 ? "Today" : `${diff} days ago`;
+}
+
+export default function ProductDetailModal({
+  product,
+  onInterest,
+}: {
+  product: AllProduct;
+  onInterest: (productId: string) => void;
+}) {
   const [current, setCurrent] = useState(0);
-  const [postedAgo, setPostedAgo] = useState("Recently");
+  const [liked, setLiked] = useState(product.isUserInterested ?? false);
+   const profile = getSessionProfile();
 
   const touchStartX = useRef<number | null>(null);
-  const nowRef = useRef<number>(0);
-
-  useEffect(() => {
-    nowRef.current = Date.now();
-  }, []);
 
   const safeImages =
     product.imageUrls && product.imageUrls.length > 0
       ? product.imageUrls
       : ["/icon.jpg"];
 
+  // Keep local liked state in sync with server data (after refetch)
   useEffect(() => {
-    if (!product.createdAt) {
-      setPostedAgo("Recently");
-      return;
-    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLiked(product.isUserInterested ?? false);
+  }, [product.id, product.isUserInterested]);
 
-    const postedDate = new Date(product.createdAt);
-
-    if (isNaN(postedDate.getTime())) {
-      setPostedAgo("Recently");
-      return;
-    }
-
-    const now = Date.now();
-    const diff = Math.floor(
-      (now - postedDate.getTime()) / (1000 * 3600 * 24)
-    );
-
-    setPostedAgo(diff <= 1 ? "Today" : `${diff} days ago`);
-  }, [product.createdAt]);
+  const postedAgo = formatPostedAgo(product.createdAt);
 
   const nextImage = () =>
     setCurrent((prev) => (prev + 1) % safeImages.length);
 
   const prevImage = () =>
-    setCurrent((prev) =>
-      prev === 0 ? safeImages.length - 1 : prev - 1
-    );
+    setCurrent((prev) => (prev === 0 ? safeImages.length - 1 : prev - 1));
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -74,14 +71,24 @@ export default function ProductDetailModal({ product }: { product: AllProduct })
 
   return (
     <div className="flex flex-col lg:flex-row gap-10">
-
       {/* LEFT SIDE */}
       <div className="w-full lg:w-2/3">
-
+        {/* TITLE + HEART */}
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold">{product.name}</h2>
 
-          <button onClick={() => setLiked(!liked)} className="text-3xl">
+          <button
+            onClick={(e) => {
+              e.stopPropagation(); // prevent closing modal
+              if (profile?.id && product.sellerId === profile.id) {
+                alert("You cannot toggle interest on your own product.");
+                return;
+              }
+              setLiked((prev) => !prev);
+              onInterest(product.id);
+            }}
+            className="text-3xl"
+          >
             {liked ? (
               <AiFillHeart className="text-[#71808b]" />
             ) : (
@@ -135,6 +142,7 @@ export default function ProductDetailModal({ product }: { product: AllProduct })
           </div>
         </div>
 
+        {/* PRICE + DATE */}
         <div className="flex items-center justify-between mt-5 text-lg">
           <p className="text-2xl font-bold">${product.price}</p>
           <div className="flex items-center gap-2 text-gray-700">
@@ -143,11 +151,24 @@ export default function ProductDetailModal({ product }: { product: AllProduct })
           </div>
         </div>
 
+        {/* DESCRIPTION */}
         <h3 className="font-semibold mt-6 text-xl">Description</h3>
         <p className="mt-1 text-gray-700 leading-relaxed">
           {product.description || "No description provided."}
         </p>
 
+        {/* HASHTAGS */}
+        {product.hashtags?.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {product.hashtags.map((tag, i) => (
+              <span key={i} className="text-xs px-1 py-1 text-blue-700">
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* CONTACT */}
         <button
           onClick={() => alert("Chat coming soon")}
           className="w-full bg-[#71808b] hover:bg-[#5f6c75] text-white py-3 rounded-xl mt-6 font-medium flex items-center justify-center gap-2"
@@ -159,7 +180,6 @@ export default function ProductDetailModal({ product }: { product: AllProduct })
 
       {/* RIGHT SIDE */}
       <div className="w-full lg:w-1/3 bg-gray-50 p-6 rounded-xl shadow flex flex-col gap-5">
-
         {[
           ["Category", product.category],
           ["Condition", product.condition],

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams} from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Home, Heart, Bell, MessageSquare } from "lucide-react";
 import { Barrio } from "next/font/google";
 import { AiOutlineUser } from "react-icons/ai";
@@ -17,7 +17,6 @@ const barrio = Barrio({
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [displayName, setDisplayName] = useState("Guest");
   const [displayEmail, setDisplayEmail] = useState("guest@bu.edu");
 
@@ -52,14 +51,6 @@ export default function Sidebar() {
           </div>
         </Link>
 
-        <div className=" px-4 pb-4">
-          <input
-            type="text"
-            placeholder="🔍 Search a product"
-            className="w-full h-12 pl-1 pr-4 py-2 rounded-lg border border-gray-300 text-sm focus:outline-blue-400"
-          />
-        </div>
-
         <nav className="mt-6 px-4 flex flex-col gap-5">
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
@@ -84,14 +75,8 @@ export default function Sidebar() {
 
       <div className="w-full px-4 pb-6">
         <div className="flex items-center gap-3 bg-white px-3 py-3 rounded-xl shadow-sm border border-gray-200">
-          <Link href="/profile" className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
-            <Image
-              src="/sampleUser.png"
-              alt="profile"
-              width={56}
-              height={56}
-              className="object-cover"
-            />
+          <Link href="/profile" className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+            <AiOutlineUser className="text-3xl text-gray-500" />
           </Link>
           <div className="flex-1 text-sm">
             <p className="font-medium">{displayName}</p>
