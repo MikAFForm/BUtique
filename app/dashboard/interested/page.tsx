@@ -4,88 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import Sidebar from "../../components/sidebar";
 import { Empty } from "antd";
-import { useEffect, useMemo, useState, useCallback } from "react";
-import { getSessionProfile } from "@/app/services/session";
-import { fetchInterestedProducts } from "@/app/services/Productposts/interestedProducts";
-import { AllProduct } from "@/app/services/Productposts/AllproductPosts";
-import { toggleInterest } from "@/app/services/toggleInterest";
+import { useInterestedPosts } from "@/app/services/hooks/useInterestedPosts";
 
 export default function PostsPage() {
-  const [posts, setPosts] = useState<AllProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
+  const { posts, loading, userId, getStatusStyle, cancelInterest } = useInterestedPosts();
   const skeletons = Array.from({ length: 3 });
-
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      const profile = getSessionProfile();
-      setUserId(profile.id);
-      if (!profile.id) {
-        setPosts([]);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const items = await fetchInterestedProducts();
-        setPosts(items);
-      } catch (err) {
-        console.error("Failed to load interested products:", err);
-        setPosts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    load();
-  }, []);
-
-  const getStatusStyle = useCallback((status: string) => {
-    switch (status.toLowerCase()) {
-      case "available":
-        return "bg-[#00C853] text-white";
-      case "hold":
-        return "bg-[#FFC107] text-white";
-      case "sold":
-        return "bg-[#9E9E9E] text-white";
-      default:
-        return "bg-gray-400 text-white";
-    }
-  }, []);
-
-  const cancelInterest = useCallback(
-    async (productId: string) => {
-      const profile = getSessionProfile();
-      if (!profile.id) {
-        alert("Please log in first.");
-        return;
-      }
-      const target = posts.find((p) => p.id === productId);
-      if (target && target.sellerId === profile.id) {
-        alert("You cannot toggle interest on your own post.");
-        return;
-      }
-      try {
-        await toggleInterest(profile.id, productId);
-        setPosts((prev) => prev.filter((p) => p.id !== productId));
-      } catch (err: any) {
-        const message = err?.message || "Failed to update interest.";
-        alert(message);
-      }
-    },
-    [posts]
-  );
-
-  const sortedPosts = useMemo(
-    () =>
-      [...posts].sort((a, b) => {
-        const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return bDate - aDate;
-      }),
-    [posts]
-  );
 
   return (
     <>
@@ -102,6 +25,7 @@ export default function PostsPage() {
 
         {loading ? (
           <div className="flex flex-col gap-6 mt-6">
+            <p className="text-gray-600 text-center">Loading your interested posts...</p>
             {skeletons.map((_, idx) => (
               <div
                 key={idx}
@@ -137,7 +61,7 @@ export default function PostsPage() {
               }
             />
           </div>
-        ) : sortedPosts.length === 0 ? (
+        ) : posts.length === 0 ? (
           <div className="flex flex-col items-center justify-center mt-20 text-center">
             <Empty
             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -155,7 +79,7 @@ export default function PostsPage() {
         ) : (
           <div className="flex flex-col gap-8">
             
-          {sortedPosts.map((post) => (
+          {posts.map((post) => (
               <div
                 key={post.id}
                 className="w-full border rounded-xl shadow-sm bg-white p-5 flex gap-6"
