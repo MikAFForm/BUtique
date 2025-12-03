@@ -14,6 +14,8 @@ from .resolvers.chats.resolver import (
 from .resolvers.authentication.resolver import resolve_login_user
 from .resolvers.products.resolver import resolve_create_product, resolve_products
 from .resolvers.search_filter.resolver import resolve_products_by_ids
+from .resolvers.authentication.resolver import resolve_create_otp
+from .resolvers.authentication.resolver import resolve_auth_otp
 from enum import Enum
 
 
@@ -24,6 +26,11 @@ class User:
     email: str
     created_at: datetime
     updated_at: datetime
+
+@strawberry.type
+class OTP:
+    success: bool
+    message: str
 
 
 def _unwrap(response):
@@ -197,6 +204,21 @@ class Query:
 
 @strawberry.type
 class Mutation:
+    @strawberry.mutation
+    def createOtp(self, email: str) -> OTP:
+        response = resolve_create_otp(email)
+        return OTP(
+            success=response["success"],
+            message=response["message"]
+        )
+        
+    #Not done yet
+    @strawberry.mutation
+    def authOtp(self, email: str, otp: int) -> bool:
+        response = resolve_auth_otp(email, otp)
+        return response
+        
+
     @strawberry.mutation
     def create_user(self, name: str, email: str, password: str) -> User:
         row = resolve_create_user(name, email, password)

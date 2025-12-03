@@ -11,8 +11,8 @@ fastapi==0.115.5
 strawberry-graphql==0.227.2
 uvicorn[standard]==0.32.0
 supabase==2.3.2
-gotrue==2.7.0
 python-dotenv==1.0.1
 pytest==8.3.3
 gotrue==2.8.0
 httpx==0.25.2
+resend==1.1.0
