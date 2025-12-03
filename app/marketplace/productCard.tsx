@@ -108,40 +108,42 @@ export default function ProductCard({ product, onInterest, onOpen }: Props) {
         </div>
       </div>
 
-      <button
-        onClick={async (e) => {
-          e.stopPropagation();
-          const profile = getSessionProfile();
-          if (!profile.id) {
-            alert("Please log in to contact the seller.");
-            router.push("/login");
-            return;
-          }
-          if (!product.sellerId) {
-            alert("Seller not available.");
-            return;
-          }
-          try {
-            const session = await createChatSession({
-              productId: product.id,
-              buyerId: profile.id,
-              sellerId: product.sellerId,
-            });
-            router.push(
-              `/dashboard/chats/messaging?sessionId=${encodeURIComponent(
-                session.id
-              )}`
-            );
-          } catch (err) {
-            console.error(err);
-            alert("Failed to start chat with seller.");
-          }
-        }}
-        className="mt-5 w-full bg-[#71808b] hover:bg-[#5f6c75] text-white py-2 rounded-lg flex items-center justify-center gap-2 text-sm"
-      >
-        <AiOutlineComment className="text-xl text-white" />
-        Contact Seller
-      </button>
+      {(!profile?.id || profile.id !== product.sellerId) && (
+        <button
+          onClick={async (e) => {
+            e.stopPropagation();
+            const freshProfile = getSessionProfile();
+            if (!freshProfile.id) {
+              alert("Please log in to contact the seller.");
+              router.push("/login");
+              return;
+            }
+            if (!product.sellerId) {
+              alert("Seller not available.");
+              return;
+            }
+            try {
+              const session = await createChatSession({
+                productId: product.id,
+                buyerId: freshProfile.id,
+                sellerId: product.sellerId,
+              });
+              router.push(
+                `/dashboard/chats/messaging?sessionId=${encodeURIComponent(
+                  session.id
+                )}`
+              );
+            } catch (err) {
+              console.error(err);
+              alert("Failed to start chat with seller.");
+            }
+          }}
+          className="mt-5 w-full bg-[#71808b] hover:bg-[#5f6c75] text-white py-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+        >
+          <AiOutlineComment className="text-xl text-white" />
+          Contact Seller
+        </button>
+      )}
     </div>
   );
 }

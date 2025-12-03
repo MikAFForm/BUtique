@@ -12,6 +12,8 @@ import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { useEffect, useRef, useState } from "react";
 import { AllProduct } from "../services/Productposts/AllproductPosts";
 import { getSessionProfile } from "../services/session";
+import { createChatSession } from "../services/chats";
+import { useRouter } from "next/navigation";
 
 function formatPostedAgo(createdAt?: string | null) {
   if (!createdAt) return "Recently";
@@ -33,6 +35,7 @@ export default function ProductDetailModal({
   const [current, setCurrent] = useState(0);
   const [liked, setLiked] = useState(product.isUserInterested ?? false);
    const profile = getSessionProfile();
+  const router = useRouter();
 
   const touchStartX = useRef<number | null>(null);
 
@@ -169,13 +172,41 @@ export default function ProductDetailModal({
         )}
 
         {/* CONTACT */}
-        <button
-          onClick={() => alert("Chat coming soon")}
-          className="w-full bg-[#71808b] hover:bg-[#5f6c75] text-white py-3 rounded-xl mt-6 font-medium flex items-center justify-center gap-2"
-        >
-          <AiOutlineComment className="text-xl" />
-          Contact Seller
-        </button>
+        {(!profile?.id || profile.id !== product.sellerId) && (
+          <button
+            onClick={async () => {
+              const freshProfile = getSessionProfile();
+              if (!freshProfile.id) {
+                alert("Please log in to contact the seller.");
+                router.push("/login");
+                return;
+              }
+              if (!product.sellerId) {
+                alert("Seller not available.");
+                return;
+              }
+              try {
+                const session = await createChatSession({
+                  productId: product.id,
+                  buyerId: freshProfile.id,
+                  sellerId: product.sellerId,
+                });
+                router.push(
+                  `/dashboard/chats/messaging?sessionId=${encodeURIComponent(
+                    session.id
+                  )}`
+                );
+              } catch (err) {
+                console.error(err);
+                alert("Failed to start chat with seller.");
+              }
+            }}
+            className="w-full bg-[#71808b] hover:bg-[#5f6c75] text-white py-3 rounded-xl mt-6 font-medium flex items-center justify-center gap-2"
+          >
+            <AiOutlineComment className="text-xl" />
+            Contact Seller
+          </button>
+        )}
       </div>
 
       {/* RIGHT SIDE */}
