@@ -12,8 +12,10 @@ import {
 } from "../services/Productposts/AllproductPosts";
 import { getSessionProfile } from "../services/session";
 import { toggleInterest } from "../services/toggleInterest";
-
-let cachedProducts: AllProduct[] | null = null;
+import {
+  getCachedMarketplaceProducts,
+  setCachedMarketplaceProducts,
+} from "../services/cache/marketplaceCache";
 
 export default function MarketplacePage() {
   const [loading, setLoading] = useState(true);
@@ -25,9 +27,12 @@ export default function MarketplacePage() {
   const loadProducts = useCallback(async (force = false) => {
     setLoading(true);
     try {
-      if (!force && cachedProducts) {
-        setAllProducts(cachedProducts);
-        return cachedProducts;
+      if (!force) {
+        const cached = getCachedMarketplaceProducts();
+        if (cached) {
+          setAllProducts(cached);
+          return cached;
+        }
       }
       const products = await fetchAllProducts();
       const visibleProducts = products
@@ -38,7 +43,7 @@ export default function MarketplacePage() {
           return dateB - dateA;
         });
       setAllProducts(visibleProducts);
-      cachedProducts = visibleProducts;
+      setCachedMarketplaceProducts(visibleProducts);
       return visibleProducts;
     } catch (error) {
       console.error("Failed to fetch all products:", error);
@@ -72,14 +77,27 @@ export default function MarketplacePage() {
     }
 
     try {
-      await toggleInterest(profile.id, productId);
-      const refreshed = await loadProducts(true);
+      const result = await toggleInterest(profile.id, productId);
+
+      const applyInterestPatch = (p: AllProduct) => {
+        if (p.id !== productId) return p;
+        const current = p.isUserInterested;
+        const next = result.liked ?? !current;
+        const delta = next === current ? 0 : next ? 1 : -1;
+        const nextCount = Math.max(0, (p.interestedCount ?? 0) + delta);
+        return { ...p, isUserInterested: next, interestedCount: nextCount };
+      };
+
+      setAllProducts((prev) => {
+        const updated = prev.map(applyInterestPatch);
+        setCachedMarketplaceProducts(updated);
+        return updated;
+      });
+
+      setSearchResults((prev) => (prev ? prev.map(applyInterestPatch) : null));
 
       if (selectedProduct) {
-        const updated = refreshed.find((p) => p.id === selectedProduct.id);
-        if (updated) {
-          setSelectedProduct(updated);
-        }
+        setSelectedProduct(applyInterestPatch(selectedProduct));
       }
     } catch (error: any) {
       if (error instanceof Error && error.message.includes("own product")) {
