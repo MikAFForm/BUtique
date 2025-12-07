@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+.coverage
 
 # next.js
 /.next/
@@ -46,4 +47,3 @@ __pycache__/
 ai_context.md
 
 backend/venv
-backend/requirement.txt
