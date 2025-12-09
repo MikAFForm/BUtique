@@ -17,7 +17,6 @@ export default function LoginPage() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
 
-    // For your backend you want email, so treat "username or email" as an email
   console.log("HANDLE LOGIN FIRED!");
 
   const result = await authUser(email, password);
@@ -31,7 +30,6 @@ export default function LoginPage() {
 
     setMessage("Login successful!");
 
-    // Redirect after success
     window.location.href = "/marketplace"; 
   }
 
@@ -67,13 +65,13 @@ export default function LoginPage() {
           required
         />
 
-        <button type="submit" className="bg-[#5E676E] text-white p-2 rounded-2xl">
+        <button type="submit" className="bg-[#5E676E] text-white p-2 rounded-2xl hover:bg-black-700">
           Login
         </button>
 
         <a
           href="http://localhost:3000/creator"
-          className="bg-[#5E676E] text-white p-2 rounded-2xl text-center"
+          className="bg-[#5E676E] text-white p-2 rounded-2xl text-center hover:bg-black-700"
         >
           Create Account
         </a>

@@ -12,10 +12,43 @@ const barrio = Barrio({
   subsets: ["latin"],
 });
 
+function isStrongPassword(pw: string) {
+  const minLength = pw.length >= 8;
+  const hasUpper = /[A-Z]/.test(pw);
+  const hasLower = /[a-z]/.test(pw);
+  const hasNumber = /\d/.test(pw);
+  const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(pw);
+
+  return minLength && hasUpper && hasLower && hasNumber && hasSymbol;
+}
+
+function getPasswordStrength(pw: string) {
+  let score = 0;
+
+  if (pw.length >= 8) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[a-z]/.test(pw)) score++;
+  if (/\d/.test(pw)) score++;
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(pw)) score++;
+
+  // Score ranges: 0–5
+  if (score <= 1) return { label: "Very Weak", color: "red", score };
+  if (score === 2) return { label: "Weak", color: "orange", score };
+  if (score === 3) return { label: "Medium", color: "gold", score };
+  if (score === 4) return { label: "Strong", color: "blue", score };
+  return { label: "Very Strong", color: "green", score };
+}
+
+function passwordsMatch(pw: string, confirm: string) {
+  return pw === confirm && pw.length > 0;
+}
+
 export default function AccountCreator() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const strength = getPasswordStrength(password);
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [otpMessage, setOtpMessage] = useState("");
   const [sendingOtp, setSendingOtp] = useState(false); 
@@ -52,12 +85,16 @@ export default function AccountCreator() {
       setLoading(false);
       return;
     }
-    if (!password || password.length < 4) {
-      setMessage("Password must be at least 4 characters");
+    if (!isStrongPassword(password)) {
+      setMessage("Password must be very Strong!");
       setLoading(false);
       return;
     }
-
+    if (!passwordsMatch(password, confirmPassword)) {
+      setMessage("Passwords do not match.");
+      setLoading(false);
+      return;
+}
     if (!otp) {
       setMessage("Please enter your verification code");
       setLoading(false);
@@ -117,10 +154,10 @@ export default function AccountCreator() {
           <button
             type="button"
             onClick={handleSendOtp}
-            className="bg-blue-600 text-white px-3 rounded-2xl whitespace-nowrap"
+            className="bg-blue-600 text-white px-3 rounded-2xl whitespace-nowrap hover:bg-blue-700"
             disabled={sendingOtp}
           >
-            {sendingOtp ? "Sending..." : "Send Code"}
+            {sendingOtp ? "Send Code" : "Send Code"}
           </button>
         </div>
 
@@ -156,6 +193,43 @@ export default function AccountCreator() {
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+
+        {password && (
+          <div className="mt-1">
+            <div
+              className="h-2 rounded-full"
+              style={{
+                width: `${(strength.score / 5) * 100}%`,
+                backgroundColor: strength.color,
+                transition: "width 0.2s ease"
+              }}
+            ></div>
+            <p className="text-sm mt-1" style={{ color: strength.color }}>
+              {strength.label}
+            </p>
+          </div>
+        )}
+
+        <label>Confirm Password</label>
+        <input
+          className="border border-black-400 rounded-2xl p-2"
+          type="password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          required
+        />
+        {confirmPassword && (
+          <p
+            className="text-sm mt-1"
+            style={{ color: passwordsMatch(password, confirmPassword) ? "green" : "red" }}
+          >
+            {passwordsMatch(password, confirmPassword)
+              ? "Passwords match"
+              : "Passwords do not match"}
+          </p>
+        )}
+
+
 
         <button
           type="submit"

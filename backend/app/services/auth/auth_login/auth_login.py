@@ -14,7 +14,7 @@ def execute(email: str, password: str) -> dict:
     if not user_data:
         return {
             "success": False,
-            "message": "Invalid email.",
+            "message": "Invalid email",
             "user": None,
         }
     user_row = user_data[0]
@@ -31,7 +31,7 @@ def execute(email: str, password: str) -> dict:
     if not pwd_data:
         return {
             "success": False,
-            "message": "Invalid password.",
+            "message": "Invalid password",
             "user": None,
         }
 
