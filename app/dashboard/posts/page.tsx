@@ -56,6 +56,7 @@ export default function PostsPage() {
     formatDate,
     getStatusLabel,
     getStatusStyle,
+    setPosts,
   } = usePostsDashboard();
 
 
@@ -78,6 +79,11 @@ export default function PostsPage() {
           open={isEditOpen}
           onClose={closeEdit}
           post={selectedPost}
+          onUpdated={(updated) =>
+            setPosts((prev) =>
+              prev.map((p) => (p.id === updated.id ? updated : p))
+            )
+          }
         />
 
         {loading ? (

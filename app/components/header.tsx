@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { FaBell, FaRegHeart } from "react-icons/fa";
 import { AiOutlineUser, AiOutlineComment } from "react-icons/ai";
-import { MdPostAdd } from "react-icons/md";
+import { BsFileEarmarkPost } from "react-icons/bs";
 import { Barrio } from "next/font/google";
 import { runProductSearch, fetchProductsByIds } from "../services/search";
 import type { AllProduct } from "../services/Productposts/AllproductPosts";
@@ -98,10 +98,10 @@ export default function Header({ onSearchResults }: HeaderProps) {
         {/* Icons */}
         <div className="flex items-center gap-6">
         <Link href="/dashboard/posts">
-          <MdPostAdd className="text-3xl text-[#71808b] hover:text-gray-700" />
+          <BsFileEarmarkPost className="text-3xl text-[#71808b] hover:text-gray-700" />
         </Link>
 
-        <Link href="/dashboard/notifications">
+        <Link href="/dashboard/notification">
           <FaBell className="text-2xl text-[#71808b] hover:text-gray-700" />
         </Link>
 
