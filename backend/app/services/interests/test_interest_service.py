@@ -1,19 +1,13 @@
-import sys
-import types
-from pathlib import Path
+import os
 from types import SimpleNamespace
 
 import pytest
+import supabase
 
-# Ensure backend is on sys.path when running pytest from repo root
-BACKEND_ROOT = Path(__file__).resolve().parents[3]
-if str(BACKEND_ROOT) not in sys.path:
-    sys.path.insert(0, str(BACKEND_ROOT))
-
-# Stub out app.db.supabase before importing the service
-fake_db_module = types.ModuleType("app.db")
-fake_db_module.supabase = SimpleNamespace(table=lambda *_args, **_kwargs: None)
-sys.modules["app.db"] = fake_db_module
+# Prevent real Supabase client creation when importing interest_service
+os.environ.setdefault("NEXT_PUBLIC_SUPABASE_URL", "http://supabase.local")
+os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "test-key")
+supabase.create_client = lambda *_args, **_kwargs: SimpleNamespace(table=lambda *_a, **_kw: None)
 
 from app.services.interests import interest_service
 

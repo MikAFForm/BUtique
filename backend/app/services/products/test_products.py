@@ -1,19 +1,12 @@
-import sys
-import types
-from pathlib import Path
+import os
 from types import SimpleNamespace
-
 import pytest
+import supabase
 
-# Ensure backend is on sys.path when running pytest from repo root
-BACKEND_ROOT = Path(__file__).resolve().parents[3]
-if str(BACKEND_ROOT) not in sys.path:
-    sys.path.insert(0, str(BACKEND_ROOT))
-
-# Prevent real Supabase client creation during import by stubbing app.db.supabase
-fake_db_module = types.ModuleType("app.db")
-fake_db_module.supabase = SimpleNamespace(table=lambda *_args, **_kwargs: None)
-sys.modules["app.db"] = fake_db_module
+# Avoid real Supabase client creation when importing product_service
+os.environ.setdefault("NEXT_PUBLIC_SUPABASE_URL", "http://supabase.local")
+os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "test-key")
+supabase.create_client = lambda *_args, **_kwargs: SimpleNamespace(table=lambda *_a, **_kw: None)
 
 from app.services.products import product_service
 
@@ -25,12 +18,7 @@ class FakeResponse:
         self.data = data
         self.error = error
 
-
-# ============================================================
 # TEST: execute_get_all_products
-# ============================================================
-
-
 def test_execute_get_all_products_success(monkeypatch):
     """Test successful retrieval of all products."""
     fake_rows = [
@@ -188,11 +176,7 @@ def test_execute_get_all_products_preserves_existing_seller_name(monkeypatch):
     assert results[0]["seller_name"] == "Existing Name"
 
 
-# ============================================================
 # TEST: execute_create_product
-# ============================================================
-
-
 def test_execute_create_product_success(monkeypatch):
     """Test successful product creation with image upload."""
     fake_row = {
