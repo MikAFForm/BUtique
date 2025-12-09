@@ -27,14 +27,18 @@ cd BUtique
 ## 3) Environment variables
 Create `.env.local` in the repo root:
 ```
-NEXT_PUBLIC_SUPABASE_URL=...your Supabase URL...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...anon key...
-SUPABASE_SERVICE_ROLE_KEY=...service role key...
+NEXT_PUBLIC_SUPABASE_URL=https://tlkatprzzigjqhclwius.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRsa2F0cHJ6emlnanFoY2x3aXVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMzg5OTAsImV4cCI6MjA3ODcxNDk5MH0.L9hSHUCXsbprZPLI9WgGX_gQtWDZL0lvvZFU-DzCdfs
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRsa2F0cHJ6emlnanFoY2x3aXVzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzEzODk5MCwiZXhwIjoyMDc4NzE0OTkwfQ.baJqkZ7snmxAd8Oq1r5G51eeBgQj_I70VCkJP7nQbRo
 NEXT_PUBLIC_GRAPHQL_ENDPOINT=http://localhost:4000/graphql
 ```
-Ensure your Supabase project already has the required schema (users, products, passwords, chat_sessions, messages).
 
-## 4) Install dependencies
+## 4) Supabase login
+- Sign in to https://app.supabase.com with this test account.
+  - Email: `butique66@gmail.com`
+  - Password: `PW1q2w3e4r!`
+
+## 5) Install dependencies
 ### Frontend (from repo root)
 ```bash
 npm install
@@ -46,25 +50,25 @@ pip install -r requirements.txt
 cd ..
 ```
 
-## 5) Run the backend (GraphQL API)
+## 6) Run the backend (GraphQL API)
 From `backend/` (same on macOS/Windows):
 ```bash
 uvicorn app.main:app --reload --port 4000
 ```
 GraphQL playground: `http://localhost:4000/graphql`.
 
-## 6) Run the frontend
+## 7) Run the frontend
 From repo root (same on macOS/Windows):
 ```bash
 npm run dev
 ```
 Open `http://localhost:3000`.
 
-## 7) Authentication note
+## 8) Authentication note
 - Routes are guarded by a session cookie (`session_user_id`). Login sets it; `/creator` is allowed for sign-up.
 - Static assets (`/icon.png`, etc.) and `/api` are public.
 
-## 8) Tests (optional)
+## 9) Tests (optional)
 From repo root (same on macOS/Windows):
 ```bash
 pytest --cov=backend --cov-report=term-missing
