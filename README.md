@@ -70,10 +70,10 @@ Open `http://localhost:3000`.
 - Routes are guarded by a session cookie (`session_user_id`). Login sets it; `/creator` is allowed for sign-up.
 - Static assets (`/icon.png`, etc.) and `/api` are public.
 
-## 9) Tests (optional)
+## 9) Tests
 From repo root (same on macOS/Windows):
 ```bash
-pytest --cov=backend --cov-report=term-missing
+pytest
 ```
 
 You’re ready to develop: backend on 4000, frontend on 3000.***
