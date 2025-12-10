@@ -1,10 +1,6 @@
 import pytest
 from app.services.users.create_user.create_user import execute
-
-# --------------------------
-# MOCKING CLASSES
-# --------------------------
-
+# Mock Classes 
 class MockResponse:
     def __init__(self, data):
         self.data = data
@@ -46,10 +42,8 @@ class MockSupabase:
         return self.tables[name]
 
 
-# ----------------------------------------
-# SUCCESS CASE
-# ----------------------------------------
 
+# Success Case
 def test_create_user_success(monkeypatch):
     mock = MockSupabase()
 
@@ -78,9 +72,7 @@ def test_create_user_success(monkeypatch):
     assert "updated_at" in result
 
 
-# ----------------------------------------
-# FAILURE CASES — EMAIL
-# ----------------------------------------
+# Email Failure case
 
 def test_invalid_email(monkeypatch):
     mock = MockSupabase()
@@ -95,9 +87,7 @@ def test_invalid_email(monkeypatch):
     assert "Email must end with @bu.edu" in str(exc.value)
 
 
-# ----------------------------------------
-# FAILURE CASES — PASSWORD
-# ----------------------------------------
+# Password Failure cases
 
 def test_password_too_short(monkeypatch):
     mock = MockSupabase()
