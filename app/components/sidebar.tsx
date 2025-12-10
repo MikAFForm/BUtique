@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Home, Heart, Bell, MessageSquare } from "lucide-react";
+import { Heart, Bell, MessageSquare } from "lucide-react";
+import { BsFileEarmarkPost } from "react-icons/bs";
 import { Barrio } from "next/font/google";
 import { AiOutlineUser } from "react-icons/ai";
 import { useEffect, useState } from "react";
@@ -21,7 +22,7 @@ export default function Sidebar() {
   const [displayEmail, setDisplayEmail] = useState("guest@bu.edu");
 
   const navItems = [
-    { name: "Posts", href: "/dashboard/posts", icon: <Home size={18} /> },
+    { name: "Posts", href: "/dashboard/posts", icon: <BsFileEarmarkPost size={18} /> },
     { name: "Interested", href: "/dashboard/interested", icon: <Heart size={18} /> },
     { name: "Notification", href: "/dashboard/notification", icon: <Bell size={18} /> },
     { name: "Chats", href: "/dashboard/chats", icon: <MessageSquare size={18} /> },

@@ -1,0 +1,5 @@
+[run]
+omit =
+    backend/app/schema.py
+    backend/app/resolvers/*
+    backend/app/main.py

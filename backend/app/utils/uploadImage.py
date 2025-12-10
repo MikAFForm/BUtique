@@ -16,7 +16,7 @@ def upload_base64_image(base64_str: str) -> str:
         if missing_padding:
             encoded += "=" * (4 - missing_padding)
 
-        file_bytes = base64.b64decode(encoded) 
+        file_bytes = base64.b64decode(encoded, validate=True) 
         file_name = f"{uuid.uuid4()}.jpg"
 
         supabase.storage.from_(BUCKET_NAME).upload(

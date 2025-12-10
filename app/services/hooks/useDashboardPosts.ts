@@ -8,6 +8,11 @@ import { deleteProductPost } from "../Productposts/deleteProductPost";
 let cachedPosts: AllProduct[] | null = null;
 let cachedUserId: string | null = null;
 
+export function invalidateDashboardPostsCache() {
+  cachedPosts = null;
+  cachedUserId = null;
+}
+
 export function usePostsDashboard() {
   const [selectedPost, setSelectedPost] = useState<AllProduct | null>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -82,11 +87,14 @@ export function usePostsDashboard() {
     try {
       const ok = await deleteProductPost(postToDelete.id);
       if (!ok) {
-        alert("Delete failed. You may not have permission to delete this item.");
+        alert(
+          "Delete failed. You may not have permission to delete this item."
+        );
         return;
       }
       setPosts((prev) => prev.filter((p) => p.id !== postToDelete.id));
-      cachedPosts = cachedPosts?.filter((p) => p.id !== postToDelete.id) ?? null;
+      cachedPosts =
+        cachedPosts?.filter((p) => p.id !== postToDelete.id) ?? null;
       closeDeleteConfirm();
     } catch (err) {
       console.error("Failed to delete product:", err);
