@@ -41,7 +41,8 @@ def test_create_user(monkeypatch):
         MockSupabase()
     )
 
-    result = execute("MikeTest", "Miketest@bu.edu", "pw")
+    # Use a password that satisfies validation (length, special char, etc.)
+    result = execute("MikeTest", "Miketest@bu.edu", "Password1!")
 
     # Validate returned row
     assert result["name"] == "MikeTest"
@@ -50,4 +51,4 @@ def test_create_user(monkeypatch):
     # Validate correct values were inserted
     assert captured_user_values["name"] == "MikeTest"
     assert captured_user_values["email"] == "Miketest@bu.edu"
-    assert captured_pwd_values["password"] == "pw"
+    assert captured_pwd_values["password"] == "Password1!"
