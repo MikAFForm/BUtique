@@ -35,7 +35,6 @@ def execute(email: str, password: str) -> dict:
             "user": None,
         }
 
-    # Normalize timestamp fields for GraphQL
     user_row["created_at"] = parse_datetime(user_row.get("created_at"))
     user_row["updated_at"] = parse_datetime(user_row.get("updated_at"))
 
