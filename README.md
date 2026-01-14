@@ -32,8 +32,7 @@ Private
 
 ## 4) Supabase login
 - Sign in to https://app.supabase.com with this test account.
-  - Email: `butique66@gmail.com`
-  - Password: `PW1q2w3e4r!`
+Private
 
 ## 5) Install dependencies
 ### Frontend (from repo root)
